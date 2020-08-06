@@ -1,19 +1,19 @@
 //
-//  JUBBLEDeviceScanListView.m
+//  JUBBLEDisconnectView.m
 //  JuBiterSDKDemo
 //
-//  Created by 张川 on 2020/5/12.
+//  Created by zhangchuan on 2020/5/12.
 //  Copyright © 2020 JuBiter. All rights reserved.
 //
 
-#import "JUBBLEDeviceScanListView.h"
+#import "JUBBLEDisconnectView.h"
 #import "FTConstant.h"
 #import "Tools.h"
 #import "JUBBLEDeviceListCell.h"
 
-@interface JUBBLEDeviceScanListView()<UITableViewDelegate, UITableViewDataSource>
+@interface JUBBLEDisconnectView()<UITableViewDelegate, UITableViewDataSource>
 
-@property (nonatomic, copy) JUBSelectBLEDeviceCallBackBlock getSelectBLEDeviceCallBackBlock;
+@property (nonatomic, copy) JUBDisConnectBLEDeviceCallBack disConnectBLEDeviceCallBack;
 
 @property (nonatomic, strong) NSMutableArray<NSString *> *BLEDeviceArray;
 
@@ -25,13 +25,13 @@
 
 @end
 
-@implementation JUBBLEDeviceScanListView
+@implementation JUBBLEDisconnectView
 
-+ (JUBBLEDeviceScanListView *)showCallBack:(JUBSelectBLEDeviceCallBackBlock)getSelectBLEDeviceCallBackBlock {
++ (JUBBLEDisconnectView *)showCallBack:(JUBDisConnectBLEDeviceCallBack)disConnectBLEDeviceCallBack {
     
-    JUBBLEDeviceScanListView *inputAddressView = [JUBBLEDeviceScanListView creatSelf];
+    JUBBLEDisconnectView *inputAddressView = [JUBBLEDisconnectView creatSelf];
     
-    inputAddressView.getSelectBLEDeviceCallBackBlock = getSelectBLEDeviceCallBackBlock;
+    inputAddressView.disConnectBLEDeviceCallBack = disConnectBLEDeviceCallBack;
             
     UIView *whiteMainView = [inputAddressView addMainView];
     
@@ -41,9 +41,9 @@
     
 }
 
-+ (JUBBLEDeviceScanListView *)creatSelf {
++ (JUBBLEDisconnectView *)creatSelf {
     
-    JUBBLEDeviceScanListView *inPutAddressView = [[JUBBLEDeviceScanListView alloc] initWithFrame:CGRectMake(0, 0, KScreenWidth, KScreenHeight)];
+    JUBBLEDisconnectView *inPutAddressView = [[JUBBLEDisconnectView alloc] initWithFrame:CGRectMake(0, 0, KScreenWidth, KScreenHeight)];
     
     inPutAddressView.backgroundColor = [UIColor colorWithRed:0 green:0 blue:0 alpha:0.3];
     
@@ -163,6 +163,11 @@
     
 }
 
+#pragma mark - 更新数据
+- (void)addDeviceArray:(NSMutableArray<NSString *> *)deviceNameArray {
+    self.BLEDeviceArray = deviceNameArray;
+    [self reloadTableView];
+}
 
 #pragma mark - tableview UITableViewDataSource delegate
 
@@ -198,7 +203,7 @@ heightForRowAtIndexPath:(NSIndexPath *)indexPath {
 #pragma mark - UITableViewDelegate
 
 - (void)tableView:(UITableView *)tableView didSelectRowAtIndexPath:(NSIndexPath *)indexPath {
-    self.getSelectBLEDeviceCallBackBlock(self.BLEDeviceArray[indexPath.row]);
+    self.disConnectBLEDeviceCallBack(self.BLEDeviceArray[indexPath.row]);
     
     [self cancle];
     
@@ -206,39 +211,11 @@ heightForRowAtIndexPath:(NSIndexPath *)indexPath {
 
 #pragma mark - 刷新tableview的方法
 
-- (void)addBLEDeviceArray:(NSString *)deviceName {
-    
-    [self.BLEDeviceArray addObject:deviceName];
-    
-    [self reloadTableView];
-}
-
-
-- (void)cleanBLEDeviceArray {
-    
-    [self.BLEDeviceArray removeAllObjects];
-    
-    [self reloadTableView];
-}
-
-
 - (void)reloadTableView {
     
     dispatch_async(dispatch_get_main_queue(), ^{
         
         [self.BLEListTableView reloadData];
-        
-//        dispatch_after(dispatch_time(DISPATCH_TIME_NOW, (int64_t)(1 * NSEC_PER_SEC)), dispatch_get_main_queue(), ^{
-//            
-//            NSInteger row = [self.BLEListTableView numberOfRowsInSection:0] - 1;
-//                        
-//            if (self.BLEDeviceArray.count && row > 0) {
-//                        
-//                [self.BLEListTableView scrollToRowAtIndexPath:[NSIndexPath indexPathForRow:row inSection:0] atScrollPosition:UITableViewScrollPositionBottom animated:YES];
-//                
-//            }
-//            
-//        });
         
     });
     
@@ -246,7 +223,7 @@ heightForRowAtIndexPath:(NSIndexPath *)indexPath {
 
 #pragma mark - 懒加载
 
-- (NSMutableArray *)BLEDeviceArray {
+- (NSArray *)BLEDeviceArray {
     
     if (!_BLEDeviceArray) {
         
