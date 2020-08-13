@@ -389,15 +389,19 @@
         
         NSNumber* deviceID = [self searchConnDeviceInfo:deviceName];
         if (deviceID) {
+//            JUBAlertView *alertView = [JUBAlertView showMsg:@"Disconnecting BLE device..."];
+//
+//            //蓝牙连接成功之后将alertView隐藏掉，延时可以去掉，需要隐藏的时候直接隐藏即可
+//            dispatch_after(dispatch_time(DISPATCH_TIME_NOW,
+//                                         (int64_t)(3 * NSEC_PER_SEC)),
+//                           dispatch_get_main_queue(),
+//                           ^ {
+//                [alertView dismiss];
+//            });
             
-            JUBAlertView *alertView = [JUBAlertView showMsg:@"Disconnecting BLE device..."];
-            
-            //蓝牙连接成功之后将alertView隐藏掉，延时可以去掉，需要隐藏的时候直接隐藏即可
-            dispatch_after(dispatch_time(DISPATCH_TIME_NOW,
-                                         (int64_t)(3 * NSEC_PER_SEC)),
-                           dispatch_get_main_queue(),
-                           ^ {
-                [alertView dismiss];
+            __block JUBAlertView *alertView;
+            dispatch_async(dispatch_get_main_queue(), ^{
+                alertView = [JUBAlertView showMsg:@"Disconnecting BLE device..."];
             });
             
             JUB_RV rv = JUB_disconnectDevice([deviceID intValue]);
@@ -407,6 +411,10 @@
                 return;
             }
             [self addMsgData:[NSString stringWithFormat:@"[JUB_disconnectDevice() OK.]"]];
+            
+            dispatch_async(dispatch_get_main_queue(), ^{
+                [alertView dismiss];
+            });
         }
     }];
     
