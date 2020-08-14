@@ -295,7 +295,7 @@
                               root:root];
             break;
         }
-        }
+        }   // switch((JUB_NS_ENUM_BTC_COINTYPE)self.optCoinType) end
         break;
     }
     case JUB_NS_ENUM_OPT::GET_ADDRESS:

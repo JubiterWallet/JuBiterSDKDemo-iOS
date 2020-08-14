@@ -65,7 +65,7 @@ int BLEReadFuncCallBack(JUB_ULONG devHandle, JUB_BYTE_PTR data, JUB_UINT32 dataL
 
 void BLEScanFuncCallBack(JUB_BYTE_PTR devName, JUB_BYTE_PTR uuid, JUB_UINT32 type) {
     
-    NSLog(@"Scan: [%s:%s:%ul]", devName, uuid, type);
+    NSLog(@"Scan: [%s:%s:0x%u]", devName, uuid, type);
     
     JUBScanDeviceInfo* deviceInfo = [[JUBScanDeviceInfo alloc] init];
     deviceInfo.name = [NSString stringWithCString:(char*)devName

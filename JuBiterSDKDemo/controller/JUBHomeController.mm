@@ -16,6 +16,7 @@
 #import "JUBNotification.h"
 
 #import "JUBDeviceController.h"
+#import "JUBFgptMgrController.h"
 #import "JUBBTCController.h"
 #import "JUBETHController.h"
 #import "JUBEOSController.h"
@@ -258,11 +259,13 @@
 //设置首页列表内容
 - (NSArray *)getButtonTitleArray {
     
-    NSArray *buttonTapSelectorNameArray = @[BUTTON_TITLE_DEVICE,
-                                            BUTTON_TITLE_BTC,
-                                            BUTTON_TITLE_ETH,
-                                            BUTTON_TITLE_EOS,
-                                            BUTTON_TITLE_XRP
+    NSArray *buttonTapSelectorNameArray = @[
+        BUTTON_TITLE_FGPT,
+        BUTTON_TITLE_DEVICE,
+        BUTTON_TITLE_BTC,
+        BUTTON_TITLE_ETH,
+        BUTTON_TITLE_EOS,
+        BUTTON_TITLE_XRP,
     ];
     
 //    self.buttonTapSelectorNameArray = buttonTapSelectorNameArray;
@@ -272,7 +275,7 @@
 
 
 //首页按钮点击响应事件
-- (void)gotoDetailAccordingCoinSeriesType:(NSInteger)coinSeriesType {
+- (void)gotoDetailAccordingCoinSeriesType:(NSInteger)optType {
     
     if (  nil ==  [[JUBSharedData sharedInstance] currDeviceID]
         || (0 == [[[JUBSharedData sharedInstance] currDeviceID] intValue])
@@ -290,8 +293,14 @@
         return;
     }
     
-    JUBDetailBaseController *vc;
-    switch (coinSeriesType) {
+    JUBFingerManagerBaseController *fgpt = nil;
+    JUBDetailBaseController *vc = nil;
+    switch (optType) {
+    case JUB_NS_ENUM_MAIN::OPT_FGPT:
+    {
+        fgpt = [[JUBFgptMgrController alloc] init];
+        break;
+    }
     case JUB_NS_ENUM_MAIN::OPT_DEVICE:
     {
         vc = [[JUBDeviceController alloc] init];
@@ -319,10 +328,16 @@
     }
     default:
         return;
-    }   // switch (coinSeriesType) end
+    }   // switch (optType) end
     
-    [self.navigationController pushViewController:vc
-                                         animated:YES];
+    if (vc) {
+        [self.navigationController pushViewController:vc
+                                             animated:YES];
+    }
+    else if (fgpt) {
+        [self.navigationController pushViewController:fgpt
+                                             animated:YES];
+    }
 }
 
 

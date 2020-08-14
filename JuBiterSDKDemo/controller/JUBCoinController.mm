@@ -199,4 +199,19 @@
 }
 
 
+- (JUB_RV)verify_fgpt:(JUB_UINT16)contextID {
+    
+    JUB_RV rv = JUBR_ERROR;
+    
+    JUB_ULONG retry = 0;
+    rv = JUB_VerifyFingerprint(contextID, &retry);
+    if (JUBR_OK != rv) {
+        [self addMsgData:[NSString stringWithFormat:@"[JUB_VerifyFingerprint() return 0x%2lx.]", rv]];
+    }
+    [self addMsgData:[NSString stringWithFormat:@"[JUB_VerifyFingerprint() OK.]"]];
+    
+    return rv;
+}
+
+
 @end
