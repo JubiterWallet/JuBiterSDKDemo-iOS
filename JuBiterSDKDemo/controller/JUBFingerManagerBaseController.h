@@ -1,6 +1,6 @@
 //
-//  JUBCoinTestDetailBaseController.h
-//  JuBiterSDKDemo
+//  JUBCoinDetailController.h
+//  nfcTagTest
 //
 //  Created by 张川 on 2020/4/28.
 //  Copyright © 2020 JuBiter. All rights reserved.
@@ -12,15 +12,11 @@
 
 NS_ASSUME_NONNULL_BEGIN
 
-@interface JUBCoinTestDetailBaseController : UIViewController
+@interface JUBFingerManagerBaseController : UIViewController
 
-@property (nonatomic, strong) NSArray<JUBButtonModel *> *buttonArray;
+@property (nonatomic, strong, nullable) NSArray<NSString *> *fingerArray;
 
-@property (nonatomic, strong) NSArray *coinTypeArray;
-
-@property (nonatomic, assign) NSInteger selectedTransmitTypeIndex;
-
-@property (nonatomic, assign) NSInteger selectCoinTypeIndex;
+@property (nonatomic, assign) NSInteger selectedFingerIndex;
 
 //此值为非空值时导航栏右边的按钮将会显示该值，并且点击可以切换单位
 @property (nonatomic, copy) NSString *navRightButtonTitle;

@@ -8,6 +8,7 @@
 
 #import <Foundation/Foundation.h>
 #import <UIKit/UIKit.h>
+#import <JubSDKCore/JUB_SDK_BTC.h>
 
 
 typedef NS_ENUM(NSInteger, JUB_NS_ENUM_DEV_TYPE) {
@@ -32,6 +33,7 @@ typedef enum : NSUInteger {
 @property (nonatomic, strong) NSString* neoPin;
 @property (nonatomic, assign) JUB_NS_ENUM_VERIFY_MODE verifyMode;
 @property (nonatomic, assign) JUB_NS_ENUM_DEV_TYPE deviceType;
+@property (nonatomic, assign) JUB_ENUM_BTC_UNIT_TYPE coinUnit;
 
 //@property (nonatomic, weak) UIViewController* selfClass;
 @property (nonatomic, strong) NSNumber* currDeviceID;

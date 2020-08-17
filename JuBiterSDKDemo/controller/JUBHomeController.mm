@@ -16,6 +16,7 @@
 #import "JUBNotification.h"
 
 #import "JUBDeviceController.h"
+#import "JUBFgptMgrController.h"
 #import "JUBBTCController.h"
 #import "JUBETHController.h"
 #import "JUBEOSController.h"
@@ -92,7 +93,7 @@
     
     [super initUI];
     
-    if (JUB_NS_ENUM_DEV_TYPE::SEG_BLE == [JUBSharedData sharedInstance].deviceType) {
+    if (JUB_NS_ENUM_DEV_TYPE::SEG_BLE == [[JUBSharedData sharedInstance] deviceType]) {
         self.showBLEButton = YES;
     }
 }
@@ -189,7 +190,7 @@
     }
     default:
         break;
-    }
+    }   // switch (index) end
 }
 
 
@@ -249,8 +250,9 @@
 
 - (NSArray *)getTransmitTypeArray {
     
-    return @[BUTTON_TITLE_NFC,
-             BUTTON_TITLE_BLE
+    return @[
+        BUTTON_TITLE_NFC,
+        BUTTON_TITLE_BLE
     ];
 }
 
@@ -258,11 +260,13 @@
 //设置首页列表内容
 - (NSArray *)getButtonTitleArray {
     
-    NSArray *buttonTapSelectorNameArray = @[BUTTON_TITLE_DEVICE,
-                                            BUTTON_TITLE_BTC,
-                                            BUTTON_TITLE_ETH,
-                                            BUTTON_TITLE_EOS,
-                                            BUTTON_TITLE_XRP
+    NSArray *buttonTapSelectorNameArray = @[
+        BUTTON_TITLE_FGPT,
+        BUTTON_TITLE_DEVICE,
+        BUTTON_TITLE_BTC,
+        BUTTON_TITLE_ETH,
+        BUTTON_TITLE_EOS,
+        BUTTON_TITLE_XRP,
     ];
     
 //    self.buttonTapSelectorNameArray = buttonTapSelectorNameArray;
@@ -272,10 +276,32 @@
 
 
 //首页按钮点击响应事件
-- (void)gotoDetailAccordingCoinSeriesType:(NSInteger)coinSeriesType {
+- (void)gotoDetailAccordingCoinSeriesType:(NSInteger)optType {
     
-    JUBDetailBaseController *vc;
-    switch (coinSeriesType) {
+    if (  nil ==  [[JUBSharedData sharedInstance] currDeviceID]
+        || (0 == [[[JUBSharedData sharedInstance] currDeviceID] intValue])
+        ) {
+        NSString *connDevAlertString = @"Please connect the device first...";
+        JUBAlertView *alertView = [JUBAlertView showMsg:connDevAlertString];
+        
+        dispatch_after(dispatch_time(DISPATCH_TIME_NOW,
+                                     (int64_t)(1 * NSEC_PER_SEC)),
+                       dispatch_get_main_queue(),
+                       ^ {
+            [alertView dismiss];
+            [self addMsgData:[NSString stringWithFormat:connDevAlertString]];
+        });
+        return;
+    }
+    
+    JUBFingerManagerBaseController *fgpt = nil;
+    JUBDetailBaseController *vc = nil;
+    switch (optType) {
+    case JUB_NS_ENUM_MAIN::OPT_FGPT:
+    {
+        fgpt = [[JUBFgptMgrController alloc] init];
+        break;
+    }
     case JUB_NS_ENUM_MAIN::OPT_DEVICE:
     {
         vc = [[JUBDeviceController alloc] init];
@@ -303,10 +329,16 @@
     }
     default:
         return;
-    }
+    }   // switch (optType) end
     
-    [self.navigationController pushViewController:vc
-                                         animated:YES];
+    if (vc) {
+        [self.navigationController pushViewController:vc
+                                             animated:YES];
+    }
+    else if (fgpt) {
+        [self.navigationController pushViewController:fgpt
+                                             animated:YES];
+    }
 }
 
 
@@ -340,7 +372,7 @@
                 alertView = [JUBAlertView showMsg:@"Connecting BLE device..."];
             });
             
-            dispatch_async(dispatch_get_global_queue(0, 0), ^ {
+            dispatch_async(dispatch_get_global_queue(QOS_CLASS_UNSPECIFIED, DISPATCH_QUEUE_PRIORITY_DEFAULT), ^ {
                 
                 JUB_UINT16 deviceID = 0;
                 JUB_RV rv = JUB_connectDevice((JUB_BYTE_PTR)[deviceInfo.name UTF8String],

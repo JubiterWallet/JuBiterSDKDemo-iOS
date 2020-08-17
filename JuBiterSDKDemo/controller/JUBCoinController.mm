@@ -25,11 +25,12 @@
     [super viewDidLoad];
     // Do any additional setup after loading the view.
     
-    NSArray *buttonTitleArray = @[BUTTON_TITLE_TRANSACTION,
-                                  BUTTON_TITLE_GETADDRESS,
-                                  BUTTON_TITLE_SHOWADDRESS,
-                                  BUTTON_TITLE_SETMYADDRESS,
-                                  BUTTON_TITLE_SETTIMEOUT,
+    NSArray *buttonTitleArray = @[
+        BUTTON_TITLE_TRANSACTION,
+        BUTTON_TITLE_GETADDRESS,
+        BUTTON_TITLE_SHOWADDRESS,
+        BUTTON_TITLE_SETMYADDRESS,
+        BUTTON_TITLE_SETTIMEOUT,
     ];
     
     NSMutableArray *buttonModelArray = [NSMutableArray array];
@@ -67,7 +68,7 @@
 
 - (void)dealloc {
     
-    JUB_UINT16 contextID = [[JUBSharedData sharedInstance].currContextID intValue];
+    JUB_UINT16 contextID = [[[JUBSharedData sharedInstance] currContextID] intValue];
     if (!contextID) {
         JUB_ClearContext(contextID);
     }
@@ -115,7 +116,7 @@
         }
         default:
             break;
-        }
+        }   // switch (self.selectedTransmitTypeIndex) end
         break;
     }
     case JUB_NS_ENUM_OPT::GET_ADDRESS:
@@ -142,7 +143,7 @@
             }
             default:
                 break;
-            }
+            }   // switch (self.selectedTransmitTypeIndex) end
         }];
         inputAddrView.addressHeader = @"m/purpose'/coin_type'/account'";
         break;
@@ -157,12 +158,12 @@
         case JUB_NS_ENUM_DEV_TYPE::SEG_NFC:
         default:
             break;
-        }
+        }   // switch (self.selectedTransmitTypeIndex) end
         break;
     }
     default:
         break;
-    }
+    }   // switch (self.optIndex) end
 }
 
 
@@ -190,11 +191,26 @@
     JUB_RV rv = JUBR_ERROR;
     
     JUB_ULONG retry = 0;
-    rv = JUB_VerifyPIN(contextID, [[JUBSharedData sharedInstance].userPin UTF8String], &retry);
+    rv = JUB_VerifyPIN(contextID, [[[JUBSharedData sharedInstance] userPin] UTF8String], &retry);
     if (JUBR_OK != rv) {
         [self addMsgData:[NSString stringWithFormat:@"[JUB_VerifyPIN() return 0x%2lx.]", rv]];
     }
     [self addMsgData:[NSString stringWithFormat:@"[JUB_VerifyPIN() OK.]"]];
+    
+    return rv;
+}
+
+
+- (JUB_RV)verify_fgpt:(JUB_UINT16)contextID {
+    
+    JUB_RV rv = JUBR_ERROR;
+    
+    JUB_ULONG retry = 0;
+    rv = JUB_VerifyFingerprint(contextID, &retry);
+    if (JUBR_OK != rv) {
+        [self addMsgData:[NSString stringWithFormat:@"[JUB_VerifyFingerprint() return 0x%2lx.]", rv]];
+    }
+    [self addMsgData:[NSString stringWithFormat:@"[JUB_VerifyFingerprint() OK.]"]];
     
     return rv;
 }

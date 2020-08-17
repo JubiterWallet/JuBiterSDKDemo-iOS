@@ -6,10 +6,12 @@
 //  Copyright © 2020 JuBiter. All rights reserved.
 //
 
-#import "JUBCoinTestDetailBaseController.h"
 #import <Foundation/Foundation.h>
 #import "JubSDKCore/JUB_SDK.h"
 #include "JUB_SDK_main.h"
+
+#import "JUBCoinTestDetailBaseController.h"
+#import "JUBHomeController.h"
 
 
 NS_ASSUME_NONNULL_BEGIN

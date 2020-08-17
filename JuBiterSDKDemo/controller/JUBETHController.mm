@@ -27,9 +27,10 @@
     
     self.optItem = JUB_NS_ENUM_MAIN::OPT_ETH;
     
-    self.coinTypeArray = @[BUTTON_TITLE_ETH,
-                           BUTTON_TITLE_ETH_ERC20,
-//                           BUTTON_TITLE_ETC
+    self.coinTypeArray = @[
+        BUTTON_TITLE_ETH,
+        BUTTON_TITLE_ETH_ERC20,
+//        BUTTON_TITLE_ETC
     ];
     
 }
@@ -57,7 +58,7 @@
     }
     default:
         break;
-    }
+    }   // switch (self.optCoinType) end
     
     NSString *filePath = [[NSBundle mainBundle] pathForResource:[NSString stringWithFormat:@"%s", json_file]
                                                          ofType:@"json"];
@@ -124,7 +125,7 @@
         }
         default:
             break;
-        }
+        }   // switch (choice) end
     }
     catch (...) {
         error_exit("[Error format json file.]\n");
@@ -243,7 +244,7 @@
     }
     default:
         break;
-    }
+    }   // switch (data.verifyMode) end
 }
 
 

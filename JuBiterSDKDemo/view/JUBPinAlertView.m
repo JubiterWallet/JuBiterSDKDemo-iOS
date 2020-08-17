@@ -58,7 +58,7 @@
         // Solve the problem that the log cannot be updated in time because the operation is stuck in the main thread
 //        inputPinCallBack(self.inputPinTextField.text);
         NSString *inputPin = self.inputPinTextField.text;
-        dispatch_async(dispatch_get_global_queue(0, 0), ^{
+        dispatch_async(dispatch_get_global_queue(QOS_CLASS_UNSPECIFIED, DISPATCH_QUEUE_PRIORITY_DEFAULT), ^{
             inputPinCallBack(inputPin);
         });
     }];

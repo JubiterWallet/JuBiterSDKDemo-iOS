@@ -27,7 +27,8 @@
     
     self.optItem = JUB_NS_ENUM_MAIN::OPT_XRP;
     
-    self.coinTypeArray = @[BUTTON_TITLE_XRP
+    self.coinTypeArray = @[
+        BUTTON_TITLE_XRP
     ];
 }
 
@@ -89,7 +90,7 @@
         }
         default:
             break;
-        }
+        }   // switch (choice) end
     }
     catch (...) {
         error_exit("[Error format json file.]\n");
@@ -188,7 +189,7 @@
     }
     default:
         break;
-    }
+    }   // switch (data.verifyMode) end
 }
 
 
@@ -242,7 +243,7 @@
     }
     default:
         return JUBR_ARGUMENTS_BAD;
-    }
+    }   // switch (xrp.type) end
     
     //typedef struct stDxrpPymt {
     //    JUB_CHAR_PTR destination;
@@ -261,7 +262,7 @@
     }
     default:
         return JUBR_ARGUMENTS_BAD;
-    }
+    }   // switch (xrp.pymt.type) end
     char* raw = nullptr;
     rv = JUB_SignTransactionXRP(contextID,
                                 path,

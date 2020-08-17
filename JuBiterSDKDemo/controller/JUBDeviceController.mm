@@ -11,6 +11,7 @@
 #import "JUBSharedData.h"
 
 #import "JUBDeviceController.h"
+#import "JUBHomeController.h"
 
 
 @interface JUBDeviceController ()
@@ -98,7 +99,7 @@
         case JUB_NS_ENUM_DEV_TYPE::SEG_NFC:
         default:
             break;
-        }
+        }   // switch (self.selectedTransmitTypeIndex) end
         break;
     }
     case JUB_NS_ENUM_DEV_OPT::DEVICE_INFO:
@@ -119,7 +120,7 @@
         }
         default:
             break;
-        }
+        }   // switch (self.selectedTransmitTypeIndex) end
         break;
     }
 //    case JUB_NS_ENUM_DEV_OPT::SEND_ONE_APDU:
@@ -143,7 +144,7 @@
 //            }
 //            default:
 //                break;
-//            }
+//            }   // switch (self.selectedTransmitTypeIndex) end
 //        }];
 //        break;
 //    }
@@ -163,7 +164,7 @@
             case JUB_NS_ENUM_DEV_TYPE::SEG_BLE:
             default:
                 break;
-            }
+            }   // switch (self.selectedTransmitTypeIndex) end
         }];
         break;
     }
@@ -186,13 +187,13 @@
             case JUB_NS_ENUM_DEV_TYPE::SEG_BLE:
             default:
                 break;
-            }
+            }   // switch (self.selectedTransmitTypeIndex) end
         }];
         break;
     }
     default:
         break;
-    }
+    }   // switch (self.optIndex) end
 }
 
 
@@ -257,7 +258,7 @@
     }
     default:
         break;
-    }
+    }   // switch (self.optIndex) end
 }
 
 
@@ -369,8 +370,8 @@
     JUB_RV rv = JUBR_ERROR;
     
     rv = JUB_ChangePIN(deviceID,
-                       [[JUBSharedData sharedInstance].userPin UTF8String],
-                       [[JUBSharedData sharedInstance].neoPin UTF8String]);
+                       [[[JUBSharedData sharedInstance] userPin] UTF8String],
+                       [[[JUBSharedData sharedInstance]  neoPin] UTF8String]);
     if (JUBR_OK != rv) {
         [self addMsgData:[NSString stringWithFormat:@"[JUB_ChangePIN() return 0x%2lx.]", rv]];
         return;
@@ -414,7 +415,7 @@
     JUB_RV rv = JUBR_ERROR;
     
     rv = JUB_GenerateSeed(deviceID,
-                          [[JUBSharedData sharedInstance].userPin UTF8String],
+                          [[[JUBSharedData sharedInstance] userPin] UTF8String],
                           JUB_ENUM_CURVES::SECP256K1);
     if (JUBR_OK != rv) {
         [self addMsgData:[NSString stringWithFormat:@"[JUB_GenerateSeed() return 0x%2lx.]", rv]];
@@ -442,7 +443,7 @@
     char *mnemonic = (char*)root[keyword.c_str()].asCString();
     
     rv = JUB_ImportMnemonic(deviceID,
-                            [[JUBSharedData sharedInstance].userPin UTF8String],
+                            [[[JUBSharedData sharedInstance] userPin] UTF8String],
                             mnemonic);
     if (JUBR_OK != rv) {
         [self addMsgData:[NSString stringWithFormat:@"[JUB_ImportMnemonic() return 0x%2lx.]", rv]];
@@ -458,7 +459,7 @@
     
     JUB_CHAR_PTR mnemonic;
     rv = JUB_ExportMnemonic(deviceID,
-                            [[JUBSharedData sharedInstance].userPin UTF8String],
+                            [[[JUBSharedData sharedInstance] userPin] UTF8String],
                             &mnemonic);
     if (JUBR_OK != rv) {
         [self addMsgData:[NSString stringWithFormat:@"[JUB_ExportMnemonic() return 0x%2lx.]", rv]];

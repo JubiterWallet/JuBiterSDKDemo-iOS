@@ -25,7 +25,7 @@ std::string GetErrMsg(JUB_RV rv) {
     case JUBR_BUFFER_TOO_SMALL:     { errMsg = "JUBR_BUFFER_TOO_SMALL"; break; }
 
     default:                        { errMsg = "UNKNOWN ERROR."; break; }
-    }
+    }   // switch (rv) end
 
     return errMsg;
 }

@@ -7,6 +7,7 @@
 //
 
 #import "JUBPinAlertView.h"
+#import "JUBListAlert.h"
 #import "JUBSharedData.h"
 
 #import "JUBBTCController.h"
@@ -27,16 +28,61 @@
     
     self.optItem = JUB_NS_ENUM_MAIN::OPT_BTC;
 
-    self.coinTypeArray = @[BUTTON_TITLE_BTCP2PKH,
-                           BUTTON_TITLE_BTCP2WPKH,
-                           BUTTON_TITLE_LTC,
-                           BUTTON_TITLE_DASH,
-                           BUTTON_TITLE_BCH,
-                           BUTTON_TITLE_QTUM,
-                           BUTTON_TITLE_QTUM_QRC20,
-                           BUTTON_TITLE_USDT,
-//                           BUTTON_TITLE_HCASH
+    self.coinTypeArray = @[
+        BUTTON_TITLE_BTCP2PKH,
+        BUTTON_TITLE_BTCP2WPKH,
+        BUTTON_TITLE_LTC,
+        BUTTON_TITLE_DASH,
+        BUTTON_TITLE_BCH,
+        BUTTON_TITLE_QTUM,
+        BUTTON_TITLE_QTUM_QRC20,
+        BUTTON_TITLE_USDT,
+//        BUTTON_TITLE_HCASH
     ];
+    
+    switch ([[JUBSharedData sharedInstance] deviceType]) {
+    case JUB_NS_ENUM_DEV_TYPE::SEG_BLE:
+        self.navRightButtonTitle = BUTTON_TITLE_SETUNIT;
+        break;
+    case JUB_NS_ENUM_DEV_TYPE::SEG_NFC:
+    default:
+        break;
+    }   // switch ([[JUBSharedData sharedInstance] deviceType]) end
+}
+
+
+- (void)navRightButtonCallBack {
+    
+    JUBListAlert *listAlert = [JUBListAlert showCallBack:^(NSString *_Nonnull selectedItem) {
+        NSLog(@"UNIT selected: %@", selectedItem);
+        JUB_ENUM_BTC_UNIT_TYPE unit = JUB_ENUM_BTC_UNIT_TYPE::ns;
+        if ([selectedItem isEqual:BUTTON_TITLE_UNIT_BTC]) {
+            unit = JUB_ENUM_BTC_UNIT_TYPE::BTC;
+        }
+        else if ([selectedItem isEqual:BUTTON_TITLE_UNIT_cBTC]) {
+            unit = JUB_ENUM_BTC_UNIT_TYPE::cBTC;
+        }
+        else if ([selectedItem isEqual:BUTTON_TITLE_UNIT_mBTC]) {
+            unit = JUB_ENUM_BTC_UNIT_TYPE::mBTC;
+        }
+        else if ([selectedItem isEqual:BUTTON_TITLE_UNIT_uBTC]) {
+            unit = JUB_ENUM_BTC_UNIT_TYPE::uBTC;
+        }
+        else if ([selectedItem isEqual:BUTTON_TITLE_UNIT_Satoshi]) {
+            unit = JUB_ENUM_BTC_UNIT_TYPE::Satoshi;
+        }
+        
+        [[JUBSharedData sharedInstance] setCoinUnit:unit];
+    }];
+    
+    listAlert.title = @"Please select UNIT:";
+    [listAlert addItems:@[
+        BUTTON_TITLE_UNIT_BTC,
+        BUTTON_TITLE_UNIT_cBTC,
+        BUTTON_TITLE_UNIT_mBTC,
+        BUTTON_TITLE_UNIT_uBTC,
+        BUTTON_TITLE_UNIT_Satoshi
+    ]];
 }
 
 
@@ -97,7 +143,7 @@
     default:
 //        json_file = JSON_FILE_HCASH;
         break;
-    }
+    }   // switch ((JUB_NS_ENUM_BTC_COINTYPE)self.optCoinType) end
     
     NSString *filePath = [[NSBundle mainBundle] pathForResource:[NSString stringWithFormat:@"%s", json_file]
                                                          ofType:@"json"];
@@ -117,7 +163,7 @@
               coinType:coinType];
         break;
     }
-    }
+    }   // switch (self.optCoinType) end
 }
 
 
@@ -130,7 +176,7 @@
     JUB_RV rv = JUBR_ERROR;
     
     try {
-        JUB_UINT16 contextID = [[JUBSharedData sharedInstance].currContextID intValue];
+        JUB_UINT16 contextID = [[[JUBSharedData sharedInstance] currContextID] intValue];
         if (0 == contextID) {
             
             CONTEXT_CONFIG_BTC cfg;
@@ -157,18 +203,19 @@
             [self addMsgData:[NSString stringWithFormat:@"[JUB_CreateContextBTC() OK.]"]];
         }
         
-        switch ([JUBSharedData sharedInstance].deviceType) {
+        switch ([[JUBSharedData sharedInstance] deviceType]) {
         case JUB_NS_ENUM_DEV_TYPE::SEG_BLE:
         {
-            dispatch_async(dispatch_get_global_queue(0, 0), ^ {
+            dispatch_async(dispatch_get_global_queue(QOS_CLASS_UNSPECIFIED, DISPATCH_QUEUE_PRIORITY_DEFAULT), ^ {
                 [self BTCSingleStepOpt:contextID
                                   root:root
                                 choice:choice];
             });
-            
+
             [self BTCCombStepOpt:contextID
                             root:root
                           choice:choice];
+
             break;
         }
         case JUB_NS_ENUM_DEV_TYPE::SEG_NFC:
@@ -182,7 +229,7 @@
         }
         default:
             break;
-        }
+        }   // switch ([[JUBSharedData sharedInstance] deviceType]) end
     }
     catch (...) {
         error_exit("[Error format json file.]\n");
@@ -194,72 +241,73 @@
 - (void)BTCSingleStepOpt:(JUB_UINT16)contextID
                     root:(Json::Value)root
                   choice:(int)choice {
-        
-        switch (choice) {
-        case JUB_NS_ENUM_OPT::GET_ADDRESS:
-        {
-            [self get_address_test:contextID
-                              root:root];
-            break;
-        }
-        case JUB_NS_ENUM_OPT::SHOW_ADDRESS:
-        {
-            [self show_address_test:contextID];
-            break;
-        }
-        case JUB_NS_ENUM_OPT::SET_MY_ADDRESS:
-        {
-            [self set_my_address_test_BTC:contextID];
-            break;
-        }
-        case JUB_NS_ENUM_OPT::SET_TIMEOUT:
-        {
-            break;
-        }
-        case JUB_NS_ENUM_OPT::TRANSACTION:
-        default:
-            break;
-        }
+    
+    switch (choice) {
+    case JUB_NS_ENUM_OPT::GET_ADDRESS:
+    {
+        [self get_address_test:contextID
+                          root:root];
+        break;
+    }
+    case JUB_NS_ENUM_OPT::SHOW_ADDRESS:
+    {
+        [self show_address_test:contextID];
+        break;
+    }
+    case JUB_NS_ENUM_OPT::SET_TIMEOUT:
+    {
+        break;
+    }
+    case JUB_NS_ENUM_OPT::SET_MY_ADDRESS:
+    case JUB_NS_ENUM_OPT::TRANSACTION:
+    default:
+        break;
+    }   // switch (choice) end
 }
 
 
 - (void)BTCCombStepOpt:(JUB_UINT16)contextID
                   root:(Json::Value)root
                 choice:(int)choice {
-        
-        switch (choice) {
-        case JUB_NS_ENUM_OPT::TRANSACTION:
+    
+    switch (choice) {
+    case JUB_NS_ENUM_OPT::SET_MY_ADDRESS:
+    {
+        [self set_my_address_test_BTC:contextID];
+        break;
+    }
+    case JUB_NS_ENUM_OPT::TRANSACTION:
+    {
+        switch((JUB_NS_ENUM_BTC_COINTYPE)self.optCoinType) {
+        case JUB_NS_ENUM_BTC_COINTYPE::COIN_QTUM_QRC20:
         {
-            switch((JUB_NS_ENUM_BTC_COINTYPE)self.optCoinType) {
-            case JUB_NS_ENUM_BTC_COINTYPE::COIN_QTUM_QRC20:
-            {
-                [self transactionQTUM_test:contextID
-                                      root:root];
-                break;
-            }
-            case JUB_NS_ENUM_BTC_COINTYPE::COIN_USDT:
-            {
-                [self transactionUSDT_test:contextID
-                                      root:root];
-                break;
-            }
-            default:
-            {
-                [self transaction_test:contextID
+            [self transactionQTUM_test:contextID
                                   root:root];
-                break;
-            }
-            }
             break;
         }
-        case JUB_NS_ENUM_OPT::GET_ADDRESS:
-        case JUB_NS_ENUM_OPT::SHOW_ADDRESS:
-        case JUB_NS_ENUM_OPT::SET_MY_ADDRESS:
-        case JUB_NS_ENUM_OPT::SET_TIMEOUT:
+        case JUB_NS_ENUM_BTC_COINTYPE::COIN_USDT:
+        {
+            [self transactionUSDT_test:contextID
+                                  root:root];
+            break;
+        }
         default:
+        {
+            [self transaction_test:contextID
+                              root:root];
             break;
         }
+        }   // switch((JUB_NS_ENUM_BTC_COINTYPE)self.optCoinType) end
+        break;
+    }
+    case JUB_NS_ENUM_OPT::GET_ADDRESS:
+    case JUB_NS_ENUM_OPT::SHOW_ADDRESS:
+    case JUB_NS_ENUM_OPT::SET_TIMEOUT:
+    default:
+        break;
+    }   // switch (choice) end
 }
+
 
 - (void)get_address_test:(JUB_UINT16)contextID
                     root:(Json::Value)root {
@@ -277,39 +325,6 @@
     [self addMsgData:[NSString stringWithFormat:@"Main xpub : %s.", mainXpub]];
     
     JUB_FreeMemory(mainXpub);
-    
-//    int inputNumber = root["inputs"].size();
-//    for (int i = 0; i < inputNumber; i++) {
-//        JUB_CHAR_PTR xpub;
-//
-//        BIP44_Path path;
-//        path.change = (JUB_ENUM_BOOL)root["inputs"][i]["bip32_path"]["change"].asBool();
-//        path.addressIndex = root["inputs"][i]["bip32_path"]["addressIndex"].asInt();
-//
-//        rv = JUB_GetHDNodeBTC(contextID, path, &xpub);
-//        if (JUBR_OK != rv) {
-//            [self addMsgData:[NSString stringWithFormat:@"[JUB_GetHDNodeBTC() return 0x%2lx.]", rv]];
-//            break;
-//        }
-//
-//        [self addMsgData:[NSString stringWithFormat:@"input %d xpub: %s.", i, xpub]];
-//
-//        JUB_FreeMemory(xpub);
-//
-//        JUB_CHAR_PTR address;
-//        rv = JUB_GetAddressBTC(contextID, path, BOOL_FALSE, &address);
-//        if (JUBR_OK != rv) {
-//            [self addMsgData:[NSString stringWithFormat:@"[JUB_GetAddressBTC() return 0x%2lx.]", rv]];
-//            break;
-//        }
-//
-//        [self addMsgData:[NSString stringWithFormat:@"input %d address: %s.", i, address]];
-//
-//        JUB_FreeMemory(address);
-//    }
-//    if (JUBR_OK != rv) {
-//        return;
-//    }
     
     JUB_CHAR_PTR xpub;
     
@@ -345,16 +360,9 @@
     
     JUB_RV rv = JUBR_ERROR;
     
-    int change = 0;
-    JUB_UINT64 index = 0;
-//    std::cout << "please input change level (non-zero means 1):" << std::endl;
-//    std::cin >> change;
-//    std::cout << "please input index " << std::endl;
-//    std::cin >> index;
-    
     BIP44_Path path;
-    path.change = JUB_ENUM_BOOL(change);
-    path.addressIndex = index;
+    path.change = (self.change ? JUB_ENUM_BOOL::BOOL_TRUE:JUB_ENUM_BOOL::BOOL_FALSE);
+    path.addressIndex = self.addressIndex;
     
     JUB_CHAR_PTR address;
     rv = JUB_GetAddressBTC(contextID, path, BOOL_TRUE, &address);
@@ -370,34 +378,70 @@
 
 - (void)set_my_address_test_BTC:(JUB_UINT16)contextID {
     
+    JUB_RV rv = [self show_virtualKeyboard:contextID];
+    if (JUBR_OK != rv) {
+        return;
+    }
+    
+    [JUBPinAlertView showInputPinAlert:^(NSString * _Nonnull pin) {
+        JUBSharedData *data = [JUBSharedData sharedInstance];
+        [data setUserPin:pin];
+        
+        JUB_RV rv = [self verify_pin:contextID];
+        if (JUBR_OK != rv) {
+            return;
+        }
+        
+        rv = [self set_my_address_proc:contextID];
+        if (JUBR_OK != rv) {
+            return;
+        }
+    }];
+}
+
+
+- (JUB_RV)set_my_address_proc:(JUB_UINT16)contextID {
+    
     JUB_RV rv = JUBR_ERROR;
     
-//    rv = verify_pin(contextID);
-//    if (JUBR_OK != rv) {
-//        return;
-//    }
-    
-    int change = 0;
-    JUB_UINT64 index = 0;
-//    std::cout << "please input change level (non-zero means 1):" << std::endl;
-//    std::cin >> change;
-//    std::cout << "please input index " << std::endl;
-//    std::cin >> index;
-    
     BIP44_Path path;
-    path.change = JUB_ENUM_BOOL(change);
-    path.addressIndex = index;
+    path.change = (self.change ? JUB_ENUM_BOOL::BOOL_TRUE:JUB_ENUM_BOOL::BOOL_FALSE);
+    path.addressIndex = self.addressIndex;
     
     JUB_CHAR_PTR address = nullptr;
     rv = JUB_SetMyAddressBTC(contextID, path, &address);
     if (JUBR_OK != rv) {
         [self addMsgData:[NSString stringWithFormat:@"[JUB_SetMyAddressBTC() return 0x%2lx.]", rv]];
-        return;
+        return rv;
     }
     [self addMsgData:[NSString stringWithFormat:@"[JUB_SetMyAddressBTC() OK.]"]];
     
     [self addMsgData:[NSString stringWithFormat:@"set my address is: %s.", address]];
     JUB_FreeMemory(address);
+    
+    return rv;
+}
+
+
+- (JUB_RV)set_unit_test:(JUB_UINT16)contextID {
+    
+    JUB_RV rv = JUBR_ERROR;
+    
+    JUB_ENUM_BTC_UNIT_TYPE unit = [[JUBSharedData sharedInstance] coinUnit];
+    if (JUB_ENUM_BTC_UNIT_TYPE::ns == unit) {
+        return JUBR_OK;
+    }
+    
+    rv = JUB_SetUnitBTC(contextID, unit);
+    if (   JUBR_OK               != rv
+        && JUBR_IMPL_NOT_SUPPORT != rv
+        ) {
+        [self addMsgData:[NSString stringWithFormat:@"[JUB_SetUnitBTC() return 0x%2lx.]", rv]];
+        return rv;
+    }
+    [self addMsgData:[NSString stringWithFormat:@"[JUB_SetUnitBTC() OK.]"]];
+    
+    return rv;
 }
 
 
@@ -420,6 +464,11 @@
             [data setUserPin:pin];
             
             JUB_RV rv = [self verify_pin:contextID];
+            if (JUBR_OK != rv) {
+                return;
+            }
+            
+            rv = [self set_unit_test:contextID];
             if (JUBR_OK != rv) {
                 return;
             }
@@ -448,7 +497,7 @@
     }
     default:
         break;
-    }
+    }   // switch (data.verifyMode) end
 }
 
 
@@ -566,7 +615,7 @@
     }
     default:
         break;
-    }
+    }   // switch (data.verifyMode) end
 }
 
 
@@ -699,7 +748,7 @@
     }
     default:
         break;
-    }
+    }   // switch (data.verifyMode) end
 }
 
 
@@ -821,7 +870,7 @@
 //        }
 //        default:
 //            break;
-//        }
+//        }   // switch (choice) end
 //    }
 //    catch (...) {
 //        error_exit("[Error format json file.]\n");
@@ -881,16 +930,9 @@
 //
 //void show_address_test_HC(JUB_UINT16 contextID) {
 //
-//    int change = 0;
-//    JUB_UINT64 index = 0;
-//    cout << "please input change level (non-zero means 1):" << endl;
-//    cin >> change;
-//    cout << "please input index " << endl;
-//    cin >> index;
-//
 //    BIP44_Path path;
-//    path.change = JUB_ENUM_BOOL(change);
-//    path.addressIndex = index;
+//    path.change = (self.change ? JUB_ENUM_BOOL::BOOL_TRUE:JUB_ENUM_BOOL::BOOL_FALSE);
+//    path.addressIndex = self.addressIndex;
 //
 //    JUB_CHAR_PTR address;
 //    JUB_RV rv = JUB_GetAddressHC(contextID, path, BOOL_TRUE, &address);
@@ -950,7 +992,7 @@
 //    }
 //    default:
 //        break;
-//    }
+//    }   // switch (data.verifyMode) end
 //}
 //
 //

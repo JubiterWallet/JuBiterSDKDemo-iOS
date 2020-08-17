@@ -27,11 +27,12 @@
     
     self.optItem = JUB_NS_ENUM_MAIN::OPT_EOS;
     
-    self.coinTypeArray = @[BUTTON_TITLE_EOS,
-                           BUTTON_TITLE_EOSBUYRAM,
-                           BUTTON_TITLE_EOSSELLRAM,
-                           BUTTON_TITLE_EOSSTAKE,
-                           BUTTON_TITLE_EOSUNSTAKE,
+    self.coinTypeArray = @[
+        BUTTON_TITLE_EOS,
+        BUTTON_TITLE_EOSBUYRAM,
+        BUTTON_TITLE_EOSSELLRAM,
+        BUTTON_TITLE_EOSSTAKE,
+        BUTTON_TITLE_EOSUNSTAKE,
     ];
 }
 
@@ -68,7 +69,7 @@
     }
     default:
         break;
-    }
+    }   // switch (self.optCoinType) end
     
     NSString *filePath = [[NSBundle mainBundle] pathForResource:[NSString stringWithFormat:@"%s", json_file]
                                                          ofType:@"json"];
@@ -122,7 +123,7 @@
         }
         default:
             break;
-        }
+        }   // switch (choice) end
     }
     catch (...) {
         error_exit("[Error format json file.]\n");
@@ -199,7 +200,7 @@
     }
     default:
         break;
-    }
+    }   // switch (data.verifyMode) end
 }
 
 
@@ -269,7 +270,7 @@
         case JUB_ENUM_EOS_ACTION_TYPE::NS_ITEM_EOS_ACTION_TYPE:
         default:
             return JUBR_ARGUMENTS_BAD;
-        }
+        }   // switch (action.type) end
         actions.push_back(action);
     }
     size_t actionCnt = actions.size();

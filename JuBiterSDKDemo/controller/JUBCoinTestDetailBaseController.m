@@ -32,6 +32,8 @@
 
 - (void)viewWillAppear:(BOOL)animated {
     
+    [super viewWillAppear:animated];
+    
     [self initData];
     
     [self initUI];
@@ -49,7 +51,7 @@
     
     self.view.backgroundColor = [UIColor whiteColor];
     
-    self.title = @"JuBiter SDK Demo";
+    self.title = @"JuBiter/JuBio SDK Demo";
     
     if (self.coinTypeArray.count != 0) {
         
@@ -78,6 +80,43 @@
 - (void)selectedTestActionTypeIndex:(NSInteger)index {
     
 }
+
+
+- (void)viewDidAppear:(BOOL)animated {
+    [super viewDidAppear:animated];
+    [self setNAVRightBtn];
+}
+
+
+- (void)setNAVRightBtn {
+    
+    if (self.navRightButtonTitle.length == 0) {
+        return;
+    }
+    
+    UIButton *navRightBtn = [UIButton buttonWithType:UIButtonTypeSystem];
+    
+    [navRightBtn setTitle:self.navRightButtonTitle forState:UIControlStateNormal];
+    
+    navRightBtn.hidden = NO;
+    
+    [navRightBtn setTitleColor:[[Tools defaultTools] colorWithHexString:@"#00ccff"] forState:UIControlStateNormal];
+    
+    [navRightBtn addTarget:self action:@selector(navRightButtonCallBack) forControlEvents:UIControlEventTouchUpInside];
+    
+    UIBarButtonItem *rightItem = [[UIBarButtonItem alloc]initWithCustomView:navRightBtn];
+    
+    rightItem.imageInsets = UIEdgeInsetsMake(0, -15,0, 0);//设置向左偏移
+    
+    self.navigationItem.rightBarButtonItem = rightItem;
+}
+
+
+//导航栏右边按钮点击回调，重写该方法可以接管点击按钮的响应
+- (void)navRightButtonCallBack {
+    NSLog(@"navRightButtonCallBack");
+}
+
 
 #pragma mark -- 懒加载
 - (UIPickerView *)pickerView {
@@ -116,7 +155,7 @@
         
         CGFloat buttonHeight = 50;
         
-        UIButton *selectedIconTypeButton = [[UIButton alloc] initWithFrame:CGRectMake(15, KStatusBarHeight + KNavigationBarHeight + 20, buttonWidth, buttonHeight)];
+        UIButton *selectedIconTypeButton = [[UIButton alloc] initWithFrame:CGRectMake(15, 20, buttonWidth, buttonHeight)];
         
         _selectedIconTypeButton = selectedIconTypeButton;
                 

@@ -19,6 +19,14 @@ static JUBSharedData *_sharedDataInstance;
     
     if (self = [super init]) {
         // custom initialization
+        _optItem = 0;
+        _userPin = nil;
+        _neoPin = nil;
+        _verifyMode = VERIFY_MODE_ITEM;
+        _deviceType = SEG_NFC;
+        _coinUnit = ns;
+        _currDeviceID = nil;
+        _currContextID = nil;
     }
     
     return self;

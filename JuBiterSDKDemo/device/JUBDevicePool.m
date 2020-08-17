@@ -38,25 +38,25 @@ static JUBDevicePool *g_devicePool = nil;
     
 //    NSLog(@"booltooth state： %ld", central.state);
     switch (central.state) {
-        case CBManagerStateUnknown:
-            NSLog(@"[当前蓝牙状态： %@]", @"CBManagerStateUnknown");
-            break;
-        case CBManagerStateResetting:
-            NSLog(@"[当前蓝牙状态： %@]", @"CBManagerStateResetting");
-            break;
-        case CBManagerStateUnsupported:
-            NSLog(@"[当前蓝牙状态： %@]", @"CBManagerStateUnsupported");
-            break;
-        case CBManagerStateUnauthorized:
-            NSLog(@"[当前蓝牙状态： %@]", @"CBManagerStateUnauthorized");
-            break;
-        case CBManagerStatePoweredOff:
-            NSLog(@"[当前蓝牙状态： %@]", @"CBManagerStatePoweredOff");
-            break;
-        case CBManagerStatePoweredOn:
-            NSLog(@"[当前蓝牙状态： %@]", @"CBManagerStatePoweredOn");
-            break;
-    }
+    case CBManagerStateUnknown:
+        NSLog(@"[Current BLE status: %@]", @"CBManagerStateUnknown");
+        break;
+    case CBManagerStateResetting:
+        NSLog(@"[Current BLE status: %@]", @"CBManagerStateResetting");
+        break;
+    case CBManagerStateUnsupported:
+        NSLog(@"[Current BLE status: %@]", @"CBManagerStateUnsupported");
+        break;
+    case CBManagerStateUnauthorized:
+        NSLog(@"[Current BLE status: %@]", @"CBManagerStateUnauthorized");
+        break;
+    case CBManagerStatePoweredOff:
+        NSLog(@"[Current BLE status: %@]", @"CBManagerStatePoweredOff");
+        break;
+    case CBManagerStatePoweredOn:
+        NSLog(@"[Current BLE status: %@]", @"CBManagerStatePoweredOn");
+        break;
+    }   // switch (central.state) end
     
     [[NSNotificationCenter defaultCenter] postNotificationName:NOTIF_DEVICE_ARRVL
                                                         object:self
