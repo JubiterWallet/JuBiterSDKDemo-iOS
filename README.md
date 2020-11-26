@@ -1,9 +1,9 @@
 # JuBiter-SDK-Demo-iOS
-> Demo on iOS for JuBitSDK, supports for NFC and bluetooth(not finished yet) devices.
+> Demo on iOS for JuBiterSDK([2.2 branch](https://github.com/JubiterWallet/JubiterSDK_C/tree/2.2)), supports for JuBiter Blade, Bio and Lite.
 
 > Depends on:
 > - jsoncpp([1.8.4](https://github.com/open-source-parsers/jsoncpp.git))
-> - JuBiterSDK([dev_3.0 branch](https://github.com/JubiterWallet/JubiterSDK_C.git))
+> - JuBiterSDK([2.2 branch](https://github.com/JubiterWallet/JubiterSDK_C.git))
 
 
 ## submodule
