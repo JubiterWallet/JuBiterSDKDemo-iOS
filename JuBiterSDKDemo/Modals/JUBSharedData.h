@@ -14,6 +14,14 @@
 #import <JubSDKCore/JUB_SDK_Hcash.h>
 
 
+#import <JubSDKProtobuf/JubSDKProtobuf.h>
+#import <JubSDKProtobuf/JubSDK.h>
+#import <JubSDKProtobuf/JubSDK+DEV.h>
+#import <JubSDKProtobuf/JubSDK+DEV_BLE.h>
+
+extern JubSDK* g_sdk;
+
+
 typedef NS_ENUM(NSInteger, JUB_NS_ENUM_DEV_TYPE) {
     SEG_NFC,
     SEG_BLE

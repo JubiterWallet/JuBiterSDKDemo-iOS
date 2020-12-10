@@ -37,7 +37,8 @@
     
     dispatch_async(dispatch_get_global_queue(0, 0), ^{
         NSUInteger deviceID = [[JUBSharedData sharedInstance] currDeviceID];
-        JUB_ENUM_BOOL b = JUB_IsBootLoader(deviceID);
+//        JUB_ENUM_BOOL b = JUB_IsBootLoader(deviceID);
+        BOOL b = [g_sdk isBootLoader:deviceID];
         [self addMsgData:[NSString stringWithFormat:@"[JUB_IsBootLoader() return OK.]"]];
         
         if (b) {
@@ -64,8 +65,8 @@
     
     JUB_UINT16 deviceID = [sharedData currDeviceID];
     if (!deviceID) {
-        JUB_IsBootLoader(deviceID);
-        JUB_ENUM_BOOL b = JUB_IsBootLoader(deviceID);
+//        JUB_ENUM_BOOL b = JUB_IsBootLoader(deviceID);
+        BOOL b = [g_sdk isBootLoader:deviceID];
         [self addMsgData:[NSString stringWithFormat:@"[JUB_IsBootLoader() return OK.]"]];
         
         if (b) {

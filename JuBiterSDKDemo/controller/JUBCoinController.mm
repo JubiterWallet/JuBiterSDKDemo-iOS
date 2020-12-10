@@ -365,7 +365,9 @@
     
     JUB_RV rv = JUBR_ERROR;
     
-    rv = JUB_SetTimeOut(contextID, timeout);
+//    rv = JUB_SetTimeOut(contextID, timeout);
+    rv = [g_sdk setTimeOut:contextID
+                   timeout:timeout];
     if (JUBR_OK != rv) {
         [self addMsgData:[NSString stringWithFormat:@"[JUB_SetTimeOut() return %@ (0x%2lx).]", [JUBErrorCode GetErrMsg:rv], rv]];
         return rv;
@@ -592,7 +594,8 @@
     
     JUB_RV rv = JUBR_ERROR;
     
-    rv = JUB_ShowVirtualPwd(contextID);
+//    rv = JUB_ShowVirtualPwd(contextID);
+    rv = [g_sdk showVirtualPwd:contextID];
     if (   JUBR_OK               != rv
 //        && JUBR_IMPL_NOT_SUPPORT != rv
         ) {
@@ -609,7 +612,8 @@
     
     JUB_RV rv = JUBR_ERROR;
     
-    rv = JUB_CancelVirtualPwd(contextID);
+//    rv = JUB_CancelVirtualPwd(contextID);
+    rv = [g_sdk cancelVirtualPwd:contextID];
     if (   JUBR_OK               != rv
 //        && JUBR_IMPL_NOT_SUPPORT != rv
         ) {
@@ -632,7 +636,11 @@
     }
     
     JUB_ULONG retry = 0;
-    rv = JUB_VerifyPIN(contextID, [[sharedData userPin] UTF8String], &retry);
+//    rv = JUB_VerifyPIN(contextID, [[sharedData userPin] UTF8String], &retry);
+    CommonProtosResultInt *result = [g_sdk verifyPIN:contextID
+                                              pinMix:[sharedData userPin]];
+    rv = [result stateCode];
+    retry = [result value];
     if (JUBR_OK != rv) {
         [self addMsgData:[NSString stringWithFormat:@"[JUB_VerifyPIN(%lu) return %@ (0x%2lx).]", retry, [JUBErrorCode GetErrMsg:rv], rv]];
         return rv;

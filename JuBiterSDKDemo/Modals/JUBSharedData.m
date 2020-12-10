@@ -9,6 +9,9 @@
 #import "JUBSharedData.h"
 
 
+JubSDK* g_sdk;
+
+
 @implementation JUBSharedData
 @synthesize currDeviceID = _currDeviceID;
 
@@ -19,6 +22,10 @@ static JUBSharedData *_sharedDataInstance;
     
     if (self = [super init]) {
         // custom initialization
+        if (nil == g_sdk) {
+            g_sdk = [[JubSDK alloc] init];
+        }
+        
         _optItem = 0;
         
         _userPin = nil;

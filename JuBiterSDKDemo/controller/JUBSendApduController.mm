@@ -135,20 +135,23 @@
         return;
     }
     
-    JUB_CHAR_PTR response;
-    rv = JUB_SendOneApdu(deviceID, [apdu UTF8String], &response);
+//    JUB_CHAR_PTR response;
+//    rv = JUB_SendOneApdu(deviceID, [apdu UTF8String], &response);
+    CommonProtosResultString* result = [g_sdk sendOneApdu:deviceID
+                                                     apdu:apdu];
+    rv = [result stateCode];
     if (JUBR_OK != rv) {
         [self addMsgData:[NSString stringWithFormat:@"[JUB_SendOneApdu() return %@ (0x%2lx).]", [JUBErrorCode GetErrMsg:rv], rv]];
         return;
     }
     
-    [self addMsgData:[NSString stringWithFormat:@"APDU response %s.", response]];
-    rv = JUB_FreeMemory(response);
-    if (JUBR_OK != rv) {
-        [self addMsgData:[NSString stringWithFormat:@"[JUB_FreeMemory() return %@ (0x%2lx).]", [JUBErrorCode GetErrMsg:rv], rv]];
-        return;
-    }
-    [self addMsgData:[NSString stringWithFormat:@"[JUB_FreeMemory() OK.]"]];
+    [self addMsgData:[NSString stringWithFormat:@"APDU response %@.", [result value]]];
+//    rv = JUB_FreeMemory(response);
+//    if (JUBR_OK != rv) {
+//        [self addMsgData:[NSString stringWithFormat:@"[JUB_FreeMemory() return %@ (0x%2lx).]", [JUBErrorCode GetErrMsg:rv], rv]];
+//        return;
+//    }
+//    [self addMsgData:[NSString stringWithFormat:@"[JUB_FreeMemory() OK.]"]];
 }
 
 @end
