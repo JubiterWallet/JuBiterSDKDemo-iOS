@@ -11,6 +11,9 @@
 #import <JubSDKCore/JUB_SDK_BTC.h>
 
 #import "JUBAmount.h"
+#import <JubSDKProtobuf/JubBitcoin.pbobjc.h>
+
+
 
 typedef NS_ENUM(NSInteger, JUB_NS_ENUM_BTC_COIN) {
     BTN_BTC_P2PKH,
@@ -36,12 +39,16 @@ static NSUInteger decimalUSDT = 8;
 static NSUInteger decimalQRC20 = 8;
 @interface JUBBTCAmount : JUBAmount
 
-+ (NSString*)title:(JUB_ENUM_BTC_UNIT_TYPE)coinUnit;
+//+ (NSString*)title:(JUB_ENUM_BTC_UNIT_TYPE)coinUnit;
+//
+//+ (NSString*)enumUnitToString:(JUB_ENUM_BTC_UNIT_TYPE)unit;
+//+ (JUB_ENUM_BTC_UNIT_TYPE)stringToEnumUnit:(NSString*)unit;
+//+ (NSUInteger)enumUnitToDecimal:(JUB_ENUM_BTC_UNIT_TYPE)unit;
 
-+ (NSString*)enumUnitToString:(JUB_ENUM_BTC_UNIT_TYPE)unit;
-+ (JUB_ENUM_BTC_UNIT_TYPE)stringToEnumUnit:(NSString*)unit;
-
-+ (NSUInteger)enumUnitToDecimal:(JUB_ENUM_BTC_UNIT_TYPE)unit;
++ (NSString*)title:(BitcoinProtosBTC_UNIT_TYPE)coinUnit;
++ (NSString*)enumUnitToString:(BitcoinProtosBTC_UNIT_TYPE)unit;
++ (BitcoinProtosBTC_UNIT_TYPE)stringToEnumUnit:(NSString*)unit;
++ (NSUInteger)enumUnitToDecimal:(BitcoinProtosBTC_UNIT_TYPE)unit;
 
 + (NSString*)convertToProperFormat:(NSString*)amount
                                opt:(JUB_NS_ENUM_BTC_COIN)opt;

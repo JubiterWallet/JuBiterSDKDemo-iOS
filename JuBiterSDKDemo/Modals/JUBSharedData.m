@@ -33,10 +33,11 @@ static JUBSharedData *_sharedDataInstance;
         
         _verifyMode = VERIFY_MODE_ITEM;
         _deviceType = SEG_NFC;
-        _coinUnit = mBTC;
+//        _coinUnit = mBTC;
+        _coinUnit = BitcoinProtosBTC_UNIT_TYPE_Btc;
         _comMode = COMMODE_NS_ITEM;
         _deviceClass = DEVICE_NS_ITEM;
-        
+
         _currDeviceID = 0;
         _currContextID = 0;
     }

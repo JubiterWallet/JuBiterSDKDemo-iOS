@@ -13,29 +13,57 @@
 @implementation JUBBTCAmount
 
 
-+ (NSString*)title:(JUB_ENUM_BTC_UNIT_TYPE)coinUnit {
-    
+//+ (NSString*)title:(JUB_ENUM_BTC_UNIT_TYPE)coinUnit {
+//
+//    return [JUBAmount title:[JUBBTCAmount enumUnitToString:coinUnit]];
+//}
+
++ (NSString *)title:(BitcoinProtosBTC_UNIT_TYPE)coinUnit
+{
     return [JUBAmount title:[JUBBTCAmount enumUnitToString:coinUnit]];
 }
 
+//+ (NSString*)enumUnitToString:(JUB_ENUM_BTC_UNIT_TYPE)unit {
+//
+//    NSString* strUnit = TITLE_UNIT_mBTC;
+//    switch (unit) {
+//    case JUB_ENUM_BTC_UNIT_TYPE::BTC:
+//        strUnit = TITLE_UNIT_BTC;
+//        break;
+//    case JUB_ENUM_BTC_UNIT_TYPE::cBTC:
+//        strUnit = TITLE_UNIT_cBTC;
+//        break;
+//    case JUB_ENUM_BTC_UNIT_TYPE::uBTC:
+//        strUnit = TITLE_UNIT_uBTC;
+//        break;
+//    case JUB_ENUM_BTC_UNIT_TYPE::Satoshi:
+//        strUnit = TITLE_UNIT_Satoshi;
+//        break;
+//    case JUB_ENUM_BTC_UNIT_TYPE::mBTC:
+//    default:
+//        break;
+//    }
+//
+//    return strUnit;
+//}
 
-+ (NSString*)enumUnitToString:(JUB_ENUM_BTC_UNIT_TYPE)unit {
++ (NSString*)enumUnitToString:(BitcoinProtosBTC_UNIT_TYPE)unit {
     
     NSString* strUnit = TITLE_UNIT_mBTC;
     switch (unit) {
-    case JUB_ENUM_BTC_UNIT_TYPE::BTC:
+    case BitcoinProtosBTC_UNIT_TYPE_Btc:
         strUnit = TITLE_UNIT_BTC;
         break;
-    case JUB_ENUM_BTC_UNIT_TYPE::cBTC:
+    case BitcoinProtosBTC_UNIT_TYPE_CBtc:
         strUnit = TITLE_UNIT_cBTC;
         break;
-    case JUB_ENUM_BTC_UNIT_TYPE::uBTC:
+    case BitcoinProtosBTC_UNIT_TYPE_UBtc:
         strUnit = TITLE_UNIT_uBTC;
         break;
-    case JUB_ENUM_BTC_UNIT_TYPE::Satoshi:
+    case BitcoinProtosBTC_UNIT_TYPE_Satoshi:
         strUnit = TITLE_UNIT_Satoshi;
         break;
-    case JUB_ENUM_BTC_UNIT_TYPE::mBTC:
+    case BitcoinProtosBTC_UNIT_TYPE_MBtc:
     default:
         break;
     }
@@ -44,48 +72,97 @@
 }
 
 
-+ (JUB_ENUM_BTC_UNIT_TYPE)stringToEnumUnit:(NSString*)unitString {
-    
-    JUB_ENUM_BTC_UNIT_TYPE unit = JUB_ENUM_BTC_UNIT_TYPE::ns;
-    
+//+ (JUB_ENUM_BTC_UNIT_TYPE)stringToEnumUnit:(NSString*)unitString {
+//
+//    JUB_ENUM_BTC_UNIT_TYPE unit = JUB_ENUM_BTC_UNIT_TYPE::ns;
+//
+//    if ([unitString isEqual:TITLE_UNIT_BTC]) {
+//        unit = JUB_ENUM_BTC_UNIT_TYPE::BTC;
+//    }
+//    else if ([unitString isEqual:TITLE_UNIT_cBTC]) {
+//        unit = JUB_ENUM_BTC_UNIT_TYPE::cBTC;
+//    }
+//    else if ([unitString isEqual:TITLE_UNIT_mBTC]) {
+//        unit = JUB_ENUM_BTC_UNIT_TYPE::mBTC;
+//    }
+//    else if ([unitString isEqual:TITLE_UNIT_uBTC]) {
+//        unit = JUB_ENUM_BTC_UNIT_TYPE::uBTC;
+//    }
+//    else if ([unitString isEqual:TITLE_UNIT_Satoshi]) {
+//        unit = JUB_ENUM_BTC_UNIT_TYPE::Satoshi;
+//    }
+//
+//    return unit;
+//}
+
++ (BitcoinProtosBTC_UNIT_TYPE)stringToEnumUnit:(NSString*)unitString
+{
+    BitcoinProtosBTC_UNIT_TYPE unit = BitcoinProtosBTC_UNIT_TYPE_Btc;
     if ([unitString isEqual:TITLE_UNIT_BTC]) {
-        unit = JUB_ENUM_BTC_UNIT_TYPE::BTC;
+        unit = BitcoinProtosBTC_UNIT_TYPE_Btc;
     }
     else if ([unitString isEqual:TITLE_UNIT_cBTC]) {
-        unit = JUB_ENUM_BTC_UNIT_TYPE::cBTC;
+        unit = BitcoinProtosBTC_UNIT_TYPE_CBtc;
     }
     else if ([unitString isEqual:TITLE_UNIT_mBTC]) {
-        unit = JUB_ENUM_BTC_UNIT_TYPE::mBTC;
+        unit = BitcoinProtosBTC_UNIT_TYPE_MBtc;
     }
     else if ([unitString isEqual:TITLE_UNIT_uBTC]) {
-        unit = JUB_ENUM_BTC_UNIT_TYPE::uBTC;
+        unit = BitcoinProtosBTC_UNIT_TYPE_UBtc;
     }
     else if ([unitString isEqual:TITLE_UNIT_Satoshi]) {
-        unit = JUB_ENUM_BTC_UNIT_TYPE::Satoshi;
+        unit = BitcoinProtosBTC_UNIT_TYPE_Satoshi;
     }
     
     return unit;
 }
 
 
-+ (NSUInteger)enumUnitToDecimal:(JUB_ENUM_BTC_UNIT_TYPE)unit {
+//+ (NSUInteger)enumUnitToDecimal:(JUB_ENUM_BTC_UNIT_TYPE)unit {
+//
+//    NSUInteger decimal = 0;
+//
+//    switch (unit) {
+//    case JUB_ENUM_BTC_UNIT_TYPE::BTC:
+//        decimal = 8;
+//        break;
+//    case JUB_ENUM_BTC_UNIT_TYPE::cBTC:
+//        decimal = 6;
+//        break;
+//    case JUB_ENUM_BTC_UNIT_TYPE::mBTC:
+//        decimal = 5;
+//        break;
+//    case JUB_ENUM_BTC_UNIT_TYPE::uBTC:
+//        decimal = 2;
+//        break;
+//    case JUB_ENUM_BTC_UNIT_TYPE::Satoshi:
+//        decimal = 8;
+//        break;
+//    default:
+//        break;
+//    }
+//
+//    return decimal;
+//}
+
++ (NSUInteger)enumUnitToDecimal:(BitcoinProtosBTC_UNIT_TYPE)unit {
     
     NSUInteger decimal = 0;
     
     switch (unit) {
-    case JUB_ENUM_BTC_UNIT_TYPE::BTC:
+    case BitcoinProtosBTC_UNIT_TYPE_Btc:
         decimal = 8;
         break;
-    case JUB_ENUM_BTC_UNIT_TYPE::cBTC:
+    case BitcoinProtosBTC_UNIT_TYPE_CBtc:
         decimal = 6;
         break;
-    case JUB_ENUM_BTC_UNIT_TYPE::mBTC:
+    case BitcoinProtosBTC_UNIT_TYPE_MBtc:
         decimal = 5;
         break;
-    case JUB_ENUM_BTC_UNIT_TYPE::uBTC:
+    case BitcoinProtosBTC_UNIT_TYPE_UBtc:
         decimal = 2;
         break;
-    case JUB_ENUM_BTC_UNIT_TYPE::Satoshi:
+    case BitcoinProtosBTC_UNIT_TYPE_Satoshi:
         decimal = 8;
         break;
     default:

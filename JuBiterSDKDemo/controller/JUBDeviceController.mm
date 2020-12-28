@@ -349,7 +349,7 @@
     
 //    JUB_CHAR_PTR appList;
 //    rv = JUB_EnumApplets(deviceID, &appList);
-    CommonProtosResultString* result = [CommonProtosResultString init];
+    CommonProtosResultString* result = [[CommonProtosResultString alloc]init];
     result = [g_sdk enumApplets:deviceID];
     rv = [result stateCode];
     if (JUBR_OK != rv) {

@@ -18,7 +18,10 @@
 #import <JubSDKProtobuf/JubSDK.h>
 #import <JubSDKProtobuf/JubSDK+DEV.h>
 #import <JubSDKProtobuf/JubSDK+DEV_BLE.h>
-
+#import <JubSDKProtobuf/JubSDK+COIN_BTC.h>
+#import <JubSDKProtobuf/JubSDK+COIN_Hcash.h>
+#import <JubSDKProtobuf/JubSDK+COIN_ETH.h>
+#import <JubSDKProtobuf/JubSDK+COIN_EOS.h>
 extern JubSDK* g_sdk;
 
 
@@ -50,7 +53,8 @@ typedef enum : NSUInteger {
 @property (nonatomic, strong) NSString* amount;
 @property (nonatomic, assign) JUB_NS_ENUM_VERIFY_MODE verifyMode;
 @property (nonatomic, assign) JUB_NS_ENUM_DEV_TYPE deviceType;
-@property (nonatomic, assign) JUB_ENUM_BTC_UNIT_TYPE coinUnit;
+//@property (nonatomic, assign) JUB_ENUM_BTC_UNIT_TYPE coinUnit;
+@property (nonatomic, assign) BitcoinProtosBTC_UNIT_TYPE coinUnit;
 @property (nonatomic, assign) JUB_ENUM_COMMODE comMode;
 @property (nonatomic, assign) JUB_ENUM_DEVICE  deviceClass;
 
