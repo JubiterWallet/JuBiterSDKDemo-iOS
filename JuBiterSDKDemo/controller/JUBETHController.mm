@@ -35,6 +35,7 @@
     return @[
         BUTTON_TITLE_ETH,
         BUTTON_TITLE_ETH_ERC20,
+        BUTTON_TITLE_ETH_UNISWAP,
         BUTTON_TITLE_ETH_BYTESTR,
 //        BUTTON_TITLE_ETC
     ];
@@ -48,6 +49,7 @@
     switch (self.selectedMenuIndex) {
     case JUB_NS_ENUM_ETH_COIN::BTN_ETH:
     case JUB_NS_ENUM_ETH_COIN::BTN_ETH_ERC20:
+    case JUB_NS_ENUM_ETH_COIN::BTN_ETH_UNISWAP:
     case JUB_NS_ENUM_ETH_COIN::BTN_ETH_BYTESTR:
     {
         json_file = JSON_FILE_ETH;
@@ -384,16 +386,19 @@
     JUB_RV rv = JUBR_ERROR;
     
     switch(self.selectedMenuIndex) {
-    case JUB_NS_ENUM_ETH_COIN::BTN_ETH_ERC20:
-        rv = [self transactionERC20_proc:contextID
-                                  amount:amount
-                                    root:root];
-        break;
-    default:
-        rv = [self transaction_proc:contextID
-                             amount:amount
-                               root:root];
-        break;
+        case JUB_NS_ENUM_ETH_COIN::BTN_ETH_ERC20:
+            rv = [self transactionERC20_proc:contextID
+                                      amount:amount
+                                        root:root];
+            break;
+        case JUB_NS_ENUM_ETH_COIN::BTN_ETH_UNISWAP:
+            rv = [self transactionUNISWAP_proc:contextID amount:amount root:root];
+            break;
+        default:
+            rv = [self transaction_proc:contextID
+                                 amount:amount
+                                   root:root];
+            break;
     }   // switch(self.selectedMenuIndex) end
     
     return rv;
@@ -464,7 +469,6 @@
     
     return rv;
 }
-
 
 //ERC-20 Test
 - (NSUInteger) transactionERC20_proc:(NSUInteger)contextID
@@ -553,6 +557,46 @@
 //            return rv;
 //        }
 //        [self addMsgData:[NSString stringWithFormat:@"[JUB_FreeMemory() OK.]"]];
+    }
+    
+    return rv;
+}
+
+
+//ETH-UNISWAP Test
+- (NSUInteger) transactionUNISWAP_proc:(NSUInteger)contextID
+                              amount:(NSString*)amount
+                                root:(Json::Value)root {
+    
+    JUB_RV rv = JUBR_ERROR;
+    CommonProtosResultString * rvStr = [[CommonProtosResultString alloc]init];
+    
+    EthereumProtosTransactionETH * transactionEth = [[EthereumProtosTransactionETH alloc]init];
+    transactionEth.path.change = root["contract"]["bip32_path"]["change"].asBool();
+    transactionEth.path.addressIndex = root["contract"]["bip32_path"]["addressIndex"].asUInt();
+    
+    transactionEth.nonce = root["contract"]["nonce"].asUInt();
+    transactionEth.gasLimit = root["contract"]["gasLimit"].asUInt();
+    transactionEth.gasPriceInWei = [NSString stringWithCString:root["contract"]["gasPriceInWei"].asCString() encoding:NSUTF8StringEncoding];
+    transactionEth.valueInWei = [NSString stringWithCString:root["contract"]["valueInWei"].asCString() encoding:NSUTF8StringEncoding];
+    if (NSComparisonResult::NSOrderedSame != [amount compare:@""]) {
+        transactionEth.valueInWei = amount;
+    }
+    transactionEth.to = [NSString stringWithCString:root["contract"]["to"].asCString() encoding:NSUTF8StringEncoding];
+    transactionEth.input = [NSString stringWithCString:root["contract"]["data"].asCString() encoding:NSUTF8StringEncoding];
+    
+    char* raw = nullptr;
+    rvStr = [g_sdk signContractETH:contextID pbTx:transactionEth];
+    rv = rvStr.stateCode;
+    if (JUBR_OK != rv) {
+        [self addMsgData:[NSString stringWithFormat:@"[JUB_SignTransactionETH() return %@ (0x%2lx).]", [JUBErrorCode GetErrMsg:rv], rv]];
+        return rv;
+    }
+    [self addMsgData:[NSString stringWithFormat:@"[JUB_SignTransactionETH() OK.]"]];
+    raw = (JUB_CHAR_PTR)rvStr.value.UTF8String;
+    if (raw) {
+        size_t txLen = strlen(raw)/2;
+        [self addMsgData:[NSString stringWithFormat:@"tx raw[%lu]: %s.", txLen, raw]];
     }
     
     return rv;
