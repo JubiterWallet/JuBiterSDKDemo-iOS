@@ -40,4 +40,7 @@ static NSUInteger decimalTRX = 1;
 + (NSString*)convertToProperFormat:(NSString*)amount
                                opt:(JUB_NS_ENUM_TRX_OPT)opt;
 
++ (NSString *)HexToStr: (NSData *)data;
++ (NSData *)StrToHex: (NSString *)hexstring;
+
 @end

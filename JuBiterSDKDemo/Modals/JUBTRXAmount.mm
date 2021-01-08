@@ -101,5 +101,51 @@
     return amt;
 }
 
++(NSString *)HexToStr: (Byte *)ibuffer alllength: (int) ilength
+{
+    NSString *strresult = [[NSString alloc]init];
+    
+    for(int i = 0; i< ilength; i++)
+    {
+        int ivalue = ibuffer[i];
+        NSString *stringint = [NSString stringWithFormat:@"%02X", ivalue];
+        strresult = [[NSString alloc]initWithFormat:@"%@%@", strresult, stringint];
+    }
+    return strresult;
+}
 
++ (NSString *)HexToStr: (NSData *)data
+{
+    Byte *ibuffer = (Byte *)[data bytes];
+    return [self HexToStr:ibuffer alllength:(int)[data length]];
+}
+
+
++ (Byte *)StrToHex: (NSString *)hexstring reBuffer:(Byte *)ibuffer
+{
+    if ([hexstring length]%2)
+        return Nil;
+    
+    Byte *result = ibuffer; //alloca([hexstring length]/2);
+    
+    for (int i = 0; i< [hexstring length]; i += 2)
+    {
+        NSString *str1 = [hexstring substringWithRange:NSMakeRange(i, 2)];
+        unsigned long ivalue = strtoul([str1 UTF8String], 0, 16);
+        result[i/2] = (ivalue & 0xff);
+    }
+    return result;
+}
+
+
++ (NSData *)StrToHex: (NSString *)hexstring
+{
+    NSData *retdata = nil;
+    Byte *result = (Byte *)alloca([hexstring length]/2);//new Byte[[hexstring length]/2];
+    
+    result = [self StrToHex:hexstring reBuffer:result];
+    retdata = [[NSData alloc]initWithBytes:result length:[hexstring length]/2];
+    
+    return retdata;
+}
 @end

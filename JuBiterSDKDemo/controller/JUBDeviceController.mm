@@ -449,10 +449,13 @@
     }
     
     JUB_ULONG retry = 0;
-    rv = JUB_ChangePIN(deviceID,
-                       [[sharedData userPin] UTF8String],
-                       [[sharedData  neoPin] UTF8String],
-                       &retry);
+//    rv = JUB_ChangePIN(deviceID,
+//                       [[sharedData userPin] UTF8String],
+//                       [[sharedData  neoPin] UTF8String],
+//                       &retry);
+    CommonProtosResultInt * rvInt = [g_sdk changePIN:deviceID pinMix:sharedData.userPin pinNew:sharedData.neoPin];
+    rv = rvInt.stateCode;
+    retry = rvInt.value;
     if (JUBR_OK != rv) {
         [self addMsgData:[NSString stringWithFormat:@"[JUB_ChangePIN(%lu) return %@ (0x%2lx).]", retry, [JUBErrorCode GetErrMsg:rv], rv]];
         return;
@@ -466,7 +469,8 @@
     
     JUB_RV rv = JUBR_ERROR;
     
-    rv = JUB_Reset(deviceID);
+//    rv = JUB_Reset(deviceID);
+    rv = [g_sdk reset:deviceID];
     if (JUBR_OK != rv) {
         [self addMsgData:[NSString stringWithFormat:@"[JUB_Reset() return %@ (0x%2lx).]", [JUBErrorCode GetErrMsg:rv], rv]];
         return;
@@ -484,9 +488,10 @@
         return;
     }
     
-    rv = JUB_GenerateSeed(deviceID,
-                          [[sharedData userPin] UTF8String],
-                          JUB_ENUM_CURVES::SECP256K1);
+//    rv = JUB_GenerateSeed(deviceID,
+//                          [[sharedData userPin] UTF8String],
+//                          JUB_ENUM_CURVES::SECP256K1);
+    rv = [g_sdk generateSeed:deviceID pinMix:sharedData.userPin pbCurve:CommonProtosCURVES_Secp256K1];
     if (JUBR_OK != rv) {
         [self addMsgData:[NSString stringWithFormat:@"[JUB_GenerateSeed() return %@ (0x%2lx).]", [JUBErrorCode GetErrMsg:rv], rv]];
         return;
@@ -517,9 +522,10 @@
     }
     char *mnemonic = (char*)root[keyword.c_str()].asCString();
     
-    rv = JUB_ImportMnemonic(deviceID,
-                            [[sharedData userPin] UTF8String],
-                            mnemonic);
+//    rv = JUB_ImportMnemonic(deviceID,
+//                            [[sharedData userPin] UTF8String],
+//                            mnemonic);
+    rv = [g_sdk importMnemonic:deviceID pinMix:sharedData.userPin mnemonic:[NSString stringWithCString:mnemonic encoding:NSUTF8StringEncoding]];
     if (JUBR_OK != rv) {
         [self addMsgData:[NSString stringWithFormat:@"[JUB_ImportMnemonic() return %@ (0x%2lx).]", [JUBErrorCode GetErrMsg:rv], rv]];
         return;
@@ -531,29 +537,32 @@
 - (void) device_export_mnemonic_test:(NSUInteger)deviceID {
     
     JUB_RV rv = JUBR_ERROR;
-    
+    CommonProtosResultString * rvStr = [[CommonProtosResultString alloc]init];
     JUBSharedData *sharedData = [JUBSharedData sharedInstance];
     if (nil == sharedData) {
         return;
     }
     
     JUB_CHAR_PTR mnemonic;
-    rv = JUB_ExportMnemonic(deviceID,
-                            [[sharedData userPin] UTF8String],
-                            &mnemonic);
+//    rv = JUB_ExportMnemonic(deviceID,
+//                            [[sharedData userPin] UTF8String],
+//                            &mnemonic);
+    rvStr = [g_sdk exportMnemonic:deviceID pinMix:sharedData.userPin];
+    rv = rvStr.stateCode;
     if (JUBR_OK != rv) {
         [self addMsgData:[NSString stringWithFormat:@"[JUB_ExportMnemonic() return %@ (0x%2lx).]", [JUBErrorCode GetErrMsg:rv], rv]];
         return;
     }
+    mnemonic = (JUB_CHAR_PTR)rvStr.value.UTF8String;
     [self addMsgData:[NSString stringWithFormat:@"[JUB_ExportMnemonic() OK.]"]];
     
     [self addMsgData:[NSString stringWithFormat:@"Device Entropy is (%s).", mnemonic]];
-    rv = JUB_FreeMemory(mnemonic);
-    if (JUBR_OK != rv) {
-        [self addMsgData:[NSString stringWithFormat:@"[JUB_FreeMemory() return %@ (0x%2lx).]", [JUBErrorCode GetErrMsg:rv], rv]];
-        return;
-    }
-    [self addMsgData:[NSString stringWithFormat:@"[JUB_FreeMemory() OK.]"]];
+//    rv = JUB_FreeMemory(mnemonic);
+//    if (JUBR_OK != rv) {
+//        [self addMsgData:[NSString stringWithFormat:@"[JUB_FreeMemory() return %@ (0x%2lx).]", [JUBErrorCode GetErrMsg:rv], rv]];
+//        return;
+//    }
+//    [self addMsgData:[NSString stringWithFormat:@"[JUB_FreeMemory() OK.]"]];
 }
 
 

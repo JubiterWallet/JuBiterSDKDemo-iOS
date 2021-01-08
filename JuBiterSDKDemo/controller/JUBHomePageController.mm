@@ -199,7 +199,8 @@
         param.callBack     = BLEReadFuncCallBack;
         param.scanCallBack = BLEScanFuncCallBack;
         param.discCallBack = BLEDiscFuncCallBack;
-        JUB_RV rv = JUB_initDevice(param);
+//        JUB_RV rv = JUB_initDevice(param);
+        JUB_RV rv = [g_sdk initDevice:param];
         if (JUBR_OK != rv) {
             [self addMsgData:[NSString stringWithFormat:@"[JUB_initDevice() return %@ (0x%lx).]", [JUBErrorCode GetErrMsg:rv], rv]];
             return;
@@ -466,14 +467,17 @@
         JUBAlertView *alertView = [JUBAlertView showMsg:@"Connecting BLE device..."];
         {
             JUB_UINT16 deviceID = 0;
-            rv = JUB_connectDevice((JUB_BYTE_PTR)[deviceInfo.name UTF8String],
-                                   (JUB_BYTE_PTR)[deviceInfo.uuid UTF8String],
-                                   (JUB_UINT32)deviceInfo.type,
-                                   &deviceID, 30000);
+//            rv = JUB_connectDevice((JUB_BYTE_PTR)[deviceInfo.name UTF8String],
+//                                   (JUB_BYTE_PTR)[deviceInfo.uuid UTF8String],
+//                                   (JUB_UINT32)deviceInfo.type,
+//                                   &deviceID, 30000);
+            CommonProtosResultInt * rvInt = [g_sdk connectDevice:deviceInfo.name bBLEUUID:deviceInfo.uuid connectType:deviceInfo.type timeout:30000];
+            rv = rvInt.stateCode;
             if (JUBR_OK != rv) {
                 [self addMsgData:[NSString stringWithFormat:@"[JUB_connectDevice() return %@ (0x%lx).]", [JUBErrorCode GetErrMsg:rv], rv]];
             }
             else {
+                deviceID = rvInt.value;
                 [self addMsgData:[NSString stringWithFormat:@"[JUB_connectDevice(%@ - %d) OK.]", deviceInfo.name, deviceID]];
                 
                 [self->connDeviceDict setObject:deviceInfo
@@ -537,7 +541,9 @@
         }
         
         currDeviceID = [optDeviceID intValue];
-        rv = JUB_isDeviceConnect(currDeviceID);
+//        rv = JUB_isDeviceConnect(currDeviceID);
+        rv = [g_sdk isDeviceConnect:currDeviceID];
+        
         if (JUBR_OK != rv) {
             [self addMsgData:[NSString stringWithFormat:@"[JUB_isDeviceConnect() return %@ (0x%lx).]", [JUBErrorCode GetErrMsg:rv], rv]];
             [self->connDeviceDict removeObjectForKey:optDeviceID];
@@ -599,7 +605,8 @@
         JUBAlertView *alertView = [JUBAlertView showMsg:@"Disconnecting BLE device..."];
         {
             currDeviceID = [optDeviceID intValue];
-            rv = JUB_disconnectDevice(currDeviceID);
+//            rv = JUB_disconnectDevice(currDeviceID);
+            rv = [g_sdk disconnectDevice:currDeviceID];
             if (JUBR_OK != rv) {
                 [self addMsgData:[NSString stringWithFormat:@"[JUB_disconnectDevice() return %@ (0x%lx).]", [JUBErrorCode GetErrMsg:rv], rv]];
             }
