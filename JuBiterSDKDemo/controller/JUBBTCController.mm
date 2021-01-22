@@ -274,7 +274,7 @@
     
 //    JUB_RV rv = JUBR_ERROR;
     
-    CommonProtosResultString * rvStr;
+    CommonProtosResultString * rvStr = [[CommonProtosResultString alloc]init];
     
     JUBSharedData *sharedData = [JUBSharedData sharedInstance];
     if (nil == sharedData) {
@@ -1060,15 +1060,21 @@
             [sharedData setCurrContextID:0];
         }
         
-        CONTEXT_CONFIG_HC cfg;
-        cfg.mainPath = (char*)root["main_path"].asCString();
-        rv = JUB_CreateContextHC(cfg, (JUB_UINT16)deviceID, &contextID);
+//        CONTEXT_CONFIG_HC cfg;
+//        cfg.mainPath = (char*)root["main_path"].asCString();
+        
+        CommonProtosContextCfg * cfg = [[CommonProtosContextCfg alloc]init];
+        cfg.mainPath = [NSString stringWithCString:root["main_path"].asCString() encoding:NSUTF8StringEncoding];
+//        rv = JUB_CreateContextHC(cfg, (JUB_UINT16)deviceID, &contextID);
+        CommonProtosResultInt * rvInt = [g_sdk createContextHC:cfg deviceID:deviceID];
+        rv = rvInt.stateCode;
         if (JUBR_OK != rv) {
             [self addMsgData:[NSString stringWithFormat:@"[JUB_CreateContextHC() return %@ (0x%2lx).]", [JUBErrorCode GetErrMsg:rv], rv]];
             return;
         }
         [self addMsgData:[NSString stringWithFormat:@"[JUB_CreateContextHC() OK.]"]];
-        [sharedData setCurrMainPath:[NSString stringWithFormat:@"%s", cfg.mainPath]];
+        [sharedData setCurrMainPath:[NSString stringWithFormat:@"%@", cfg.mainPath]];
+        contextID = rvInt.value;
         [sharedData setCurrContextID:contextID];
         
         [self CoinOptHC:contextID
