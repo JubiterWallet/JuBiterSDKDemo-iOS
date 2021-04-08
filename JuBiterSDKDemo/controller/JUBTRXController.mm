@@ -12,7 +12,7 @@
 #import "JUBTRXAmount.h"
 
 @interface JUBTRXController ()
-
+@property (nonatomic,assign)Transaction_Contract_ContractType transferType;
 @end
 
 
@@ -25,17 +25,20 @@
     // Do any additional setup after loading the view.
     
     self.title = @"TRX options";
+    self.transferType = Transaction_Contract_ContractType_AccountCreateContract;
     
     self.optItem = JUB_NS_ENUM_MAIN::OPT_TRX;
 }
 
 
 - (NSArray*) subMenu {
-    
     return @[
         BUTTON_TITLE_TRX,
         BUTTON_TITLE_TRC10,
-        BUTTON_TITLE_TRC20
+        BUTTON_TITLE_TRCFree,
+        BUTTON_TITLE_TRCUnfreeze,
+        BUTTON_TITLE_TRC20,
+        BUTTON_TITLE_TRC20_TRANSFER
     ];
 }
 
@@ -43,26 +46,7 @@
 #pragma mark - 通讯库寻卡回调
 - (void) CoinTRXOpt:(NSUInteger)deviceID {
     
-    const char* json_file = "";
-    switch (self.selectedMenuIndex) {
-    case JUB_NS_ENUM_TRX_OPT::BTN_TRX:
-    {
-        json_file = JSON_FILE_TRX;
-        break;
-    }
-    case JUB_NS_ENUM_TRX_OPT::BTN_TRC10:
-    {
-        json_file = JSON_FILE_TRC10;
-        break;
-    }
-    case JUB_NS_ENUM_TRX_OPT::BTN_TRC20:
-    {
-        json_file = JSON_FILE_TRC20;
-        break;
-    }
-    default:
-        break;
-    }   // switch (self.selectedMenuIndex) end
+    const char* json_file = JSON_FILE_TRX;
     
     NSString *filePath = [[NSBundle mainBundle] pathForResource:[NSString stringWithFormat:@"%s", json_file]
                                                          ofType:@"json"];
@@ -335,10 +319,35 @@
                                root:root];
         break;
     }   // switch(self.selectedMenuIndex) end
-    
     return rv;
 }
 
+- (Transaction_Contract_ContractType)TransferType
+{
+    switch(self.selectedMenuIndex) {
+        case 0:
+            self.transferType = Transaction_Contract_ContractType_TransferContract;
+            break;
+        case 1:
+            self.transferType = Transaction_Contract_ContractType_TransferAssetContract;
+            break;
+        case 2:
+            self.transferType = Transaction_Contract_ContractType_FreezeBalanceContract;
+            break;
+        case 3:
+            self.transferType = Transaction_Contract_ContractType_UnfreezeBalanceContract;
+            break;
+        case 4:
+            self.transferType = Transaction_Contract_ContractType_TriggerSmartContract;
+            break;
+        case 5:
+            self.transferType = Transaction_Contract_ContractType_GetContract;
+            break;
+    default:
+        break;
+    }
+    return self.transferType;
+}
 
 - (NSUInteger) transaction_proc:(NSUInteger)contextID
                          amount:(NSString*)amount
@@ -350,68 +359,90 @@
         return JUBR_ARGUMENTS_BAD;
     }
     
-//    JUB_TX_TRX tx;
-//    tx.ref_block_bytes = (char*)root["TRX"]["pack"]["ref_block_bytes"].asCString();
-//    tx.ref_block_num = 0;
-//    tx.ref_block_hash = (char*)root["TRX"]["pack"]["ref_block_hash"].asCString();
-//    tx.data = nullptr;
-//    tx.expiration = (char*)root["TRX"]["pack"]["expiration"].asCString();
-//    tx.timestamp = (char*)root["TRX"]["pack"]["timestamp"].asCString();
-//    tx.fee_limit = (char*)"0";
-    Transaction_raw * tx = [[Transaction_raw alloc]init];
-    tx.refBlockBytes = [JUBTRXAmount StrToHex:[NSString stringWithCString:root["TRX"]["pack"]["ref_block_bytes"].asCString() encoding:NSUTF8StringEncoding]];
-    tx.refBlockNum = 0;
-    tx.refBlockHash = [JUBTRXAmount StrToHex:[NSString stringWithCString:root["TRX"]["pack"]["ref_block_hash"].asCString() encoding:NSUTF8StringEncoding]];
-    tx.data_p = nil;
-    tx.expiration = [NSString stringWithCString:root["TRX"]["pack"]["expiration"].asCString() encoding:NSUTF8StringEncoding].integerValue;
-    tx.timestamp = [NSString stringWithCString:root["TRX"]["pack"]["timestamp"].asCString() encoding:NSUTF8StringEncoding].integerValue;
-    tx.feeLimit = 0;
-    
-    
-//    JUB_CONTRACT_TRX contrTRX;
-//    contrTRX.type = (JUB_ENUM_TRX_CONTRACT_TYPE)root["TRX"]["contracts"]["type"].asUInt();
     Transaction_Contract * contrTRX = [[Transaction_Contract alloc]init];
-    contrTRX.type = (Transaction_Contract_ContractType)root["TRX"]["contracts"]["type"].asUInt();
+    contrTRX.type = [self TransferType];
     
+    CommonProtosResultString * rvStr = [[CommonProtosResultString alloc]init];
+    rvStr = [g_sdk checkAddressTRX:contextID address:[NSString stringWithCString:root["TRX"]["contracts"]["owner_address"].asCString() encoding:NSUTF8StringEncoding]];
+    NSData * ownerAddressData = [JUBTRXAmount StrToHex:rvStr.value];
+    
+    NSString * trc20Abi = @"";
+    
+    rvStr = [g_sdk checkAddressTRX:contextID address:[NSString stringWithCString:root["TRX"]["TRC20"]["contract_address"].asCString() encoding:NSUTF8StringEncoding]];
+    
+    NSString * contractAddress = rvStr.value;
+    
+    if (contrTRX.type == Transaction_Contract_ContractType_TransferAssetContract) {
+        NSString * assetName = [NSString stringWithCString:root["TRX"]["TRC10"]["assetName"].asCString() encoding:NSUTF8StringEncoding];
+        NSString * assetID = [NSString stringWithCString:root["TRX"]["TRC10"]["assetID"].asCString() encoding:NSUTF8StringEncoding];
+        NSInteger unitDP = root["TRX"]["TRC10"]["dp"].asUInt64();
+        
+        rv = [g_sdk setTRC10Asset:contextID assetName:assetName unitDP:unitDP assetID:assetID];
+        if (JUBR_OK != rv) {
+            [self addMsgData:[NSString stringWithFormat:@"[JUB_setTRC10Asset() return %@ (0x%2lx).]", [JUBErrorCode GetErrMsg:rv], rv]];
+            return rv;
+        }
+    }
+    
+    BOOL bERC20 = NO;
+    if (32 == contrTRX.type) {
+        bERC20 = YES;
+        contrTRX.type = Transaction_Contract_ContractType_TriggerSmartContract;
+    }
     std::string strType = std::to_string((unsigned int)contrTRX.type);
     char* sType = new char[strType.length()+1];
     memset(sType, 0x00, strType.length()+1);
     std::copy(strType.begin(), strType.end(), sType);
     
-    std::string strOwnerAddress = root["TRX"]["contracts"]["owner_address"].asCString();
+    if (bERC20) {
+        NSString * tokenName = [NSString stringWithCString:root["TRX"]["TRC20"]["tokenName"].asCString() encoding:NSUTF8StringEncoding];
+        NSInteger unitDP = root["TRX"]["TRC20"]["dp"].asUInt64();
+        NSString * tokenTo = [NSString stringWithCString:root["TRX"]["TRC20"]["token_to"].asCString() encoding:NSUTF8StringEncoding];
+        NSString * tokenValue = [NSString stringWithCString:root["TRX"]["TRC20"]["token_value"].asCString() encoding:NSUTF8StringEncoding];
+        
+        CommonProtosResultString * rvStr = [[CommonProtosResultString alloc]init];
+        rvStr = [g_sdk buildTRC20Abi:contextID tokenName:tokenName unitDP:unitDP contractAddress:contractAddress tokenTo:tokenTo tokenValue:tokenValue];
+        rv = rvStr.stateCode;
+        if (JUBR_OK != rv) {
+            [self addMsgData:[NSString stringWithFormat:@"[JUB_buildTRC20Abi() return %@ (0x%2lx).]", [JUBErrorCode GetErrMsg:rv], rv]];
+            return rv;
+        }
+        trc20Abi = rvStr.value;
+    }
+        Transaction_raw * tx = [[Transaction_raw alloc]init];
     
-    switch (contrTRX.type /*(JUB_ENUM_TRX_CONTRACT_TYPE)contrTRX.type*/) {
-        case Transaction_Contract_ContractType_TransferContract://JUB_ENUM_TRX_CONTRACT_TYPE::XFER_CONTRACT:
+        tx.refBlockBytes = [JUBTRXAmount StrToHex:[NSString stringWithCString:root["TRX"]["pack"]["ref_block_bytes"].asCString() encoding:NSUTF8StringEncoding]];
+        tx.refBlockNum = 0;
+        tx.refBlockHash = [JUBTRXAmount StrToHex:[NSString stringWithCString:root["TRX"]["pack"]["ref_block_hash"].asCString() encoding:NSUTF8StringEncoding]];
+        tx.data_p = nil;
+        tx.expiration = [NSString stringWithCString:root["TRX"]["pack"]["expiration"].asCString() encoding:NSUTF8StringEncoding].integerValue;
+        tx.timestamp = [NSString stringWithCString:root["TRX"]["pack"]["timestamp"].asCString() encoding:NSUTF8StringEncoding].integerValue;
+        tx.feeLimit = 0;
+    
+    switch (contrTRX.type) {
+        case Transaction_Contract_ContractType_TransferContract:
         {
-//        contrTRX.transfer.owner_address = (JUB_CHAR_PTR)strOwnerAddress.c_str();
-//        contrTRX.transfer.to_address = (JUB_CHAR_PTR)root["TRX"]["contracts"][sType]["to_address"].asCString();
-//        contrTRX.transfer.amount = root["TRX"]["contracts"][sType]["amount"].asUInt();
             TransferContract * transfer = [[TransferContract alloc]init];
             
-            CommonProtosResultString * rvStr = [[CommonProtosResultString alloc]init];
-            rvStr = [g_sdk checkAddressTRX:contextID address:[NSString stringWithCString:root["TRX"]["contracts"]["owner_address"].asCString() encoding:NSUTF8StringEncoding]];
-            transfer.ownerAddress = [JUBTRXAmount StrToHex:rvStr.value];
+            transfer.ownerAddress = ownerAddressData;
 
             rvStr = [g_sdk checkAddressTRX:contextID address:[NSString stringWithCString:root["TRX"]["contracts"][sType]["to_address"].asCString() encoding:NSUTF8StringEncoding]];
             transfer.toAddress = [JUBTRXAmount StrToHex:rvStr.value];
 
-            transfer.amount = root["TRX"]["contracts"][sType]["amount"].asUInt();
+            transfer.amount = root["TRX"]["contracts"][sType]["amount"].asUInt64();
             [contrTRX.parameter packWithMessage:transfer error:nil];
             
             break;
         }
-        case Transaction_Contract_ContractType_TransferAssetContract://JUB_ENUM_TRX_CONTRACT_TYPE::XFER_ASSET_CONTRACT:
+        case Transaction_Contract_ContractType_TransferAssetContract:
         {
-//        contrTRX.transferAsset.asset_name = (JUB_CHAR_PTR)root["TRX"]["contracts"][sType]["asset_name"].asCString();
-//        contrTRX.transferAsset.to_address = (JUB_CHAR_PTR)root["TRX"]["contracts"][sType]["to_address"].asCString();
-//        contrTRX.transferAsset.amount = root["TRX"]["contracts"][sType]["amount"].asUInt();
+            TransferAssetContract *transferAsset = [[TransferAssetContract alloc]init];
             
-            ParticipateAssetIssueContract *transferAsset = [[ParticipateAssetIssueContract alloc]init];
+            transferAsset.assetName = [NSData dataWithBytes:root["TRX"]["contracts"][sType]["asset_name"].asCString() length:7];
             
-            CommonProtosResultString * rvStr = [[CommonProtosResultString alloc]init];
-            rvStr = [g_sdk checkAddressTRX:contextID address:[NSString stringWithCString:root["TRX"]["contracts"]["owner_address"].asCString() encoding:NSUTF8StringEncoding]];
-            transferAsset.ownerAddress = [JUBTRXAmount StrToHex:rvStr.value];
+            transferAsset.ownerAddress = ownerAddressData;
 
+            CommonProtosResultString * rvStr = [[CommonProtosResultString alloc]init];
             rvStr = [g_sdk checkAddressTRX:contextID address:[NSString stringWithCString:root["TRX"]["contracts"][sType]["to_address"].asCString() encoding:NSUTF8StringEncoding]];
             transferAsset.toAddress = [JUBTRXAmount StrToHex:rvStr.value];
             
@@ -420,25 +451,66 @@
 
             break;
         }
-        case Transaction_Contract_ContractType_TriggerSmartContract://JUB_ENUM_TRX_CONTRACT_TYPE::TRIG_SMART_CONTRACT:
+        case Transaction_Contract_ContractType_FreezeBalanceContract:
         {
-//        tx.fee_limit = (char*)root["TRX"]["contracts"][sType]["fee_limit"].asCString();
-//        contrTRX.triggerSmart.owner_address = (JUB_CHAR_PTR)strOwnerAddress.c_str();
-//        contrTRX.triggerSmart.contract_address = (char*)root["TRX"]["contracts"][sType]["contract_address"].asCString();
-//        contrTRX.triggerSmart.data = (char*)root["TRX"]["contracts"][sType]["data"].asCString();
-//        contrTRX.triggerSmart.call_value = root["TRX"]["contracts"][sType]["call_value"].asUInt64();
-//        contrTRX.triggerSmart.call_token_value = root["TRX"]["contracts"][sType]["call_token_value"].asUInt64();
-//        contrTRX.triggerSmart.token_id = root["TRX"]["contracts"][sType]["token_id"].asUInt64();
-            tx.feeLimit = root["TRX"]["contracts"][sType]["fee_limit"].asInt();
+            FreezeBalanceContract * freezeBalance = [[FreezeBalanceContract alloc]init];
+            CommonProtosResultString * rvStr = [[CommonProtosResultString alloc]init];
+            
+            freezeBalance.ownerAddress = ownerAddressData;
+            
+            freezeBalance.frozenBalance = root["TRX"]["contracts"][sType]["frozen_balance"].asUInt64();
+            freezeBalance.frozenDuration = root["TRX"]["contracts"][sType]["frozen_duration"].asUInt64();
+            freezeBalance.resource = (ResourceCode)root["TRX"]["contracts"][sType]["resource"].asUInt64();
+            
+            
+            rvStr = [g_sdk checkAddressTRX:contextID address:[NSString stringWithCString:root["TRX"]["contracts"][sType]["receiver_address"].asCString() encoding:NSUTF8StringEncoding]];
+
+            freezeBalance.receiverAddress = [JUBTRXAmount StrToHex:rvStr.value];
+            [contrTRX.parameter packWithMessage:freezeBalance error:nil];
+            
+            break;
+        }
+        case Transaction_Contract_ContractType_UnfreezeBalanceContract:
+        {
+            UnfreezeBalanceContract * unfreezeBalance = [[UnfreezeBalanceContract alloc]init];
+            CommonProtosResultString * rvStr = [[CommonProtosResultString alloc]init];
+            
+            unfreezeBalance.ownerAddress = ownerAddressData;
+            unfreezeBalance.resource = (ResourceCode)root["TRX"]["contracts"][sType]["resource"].asUInt64();
+            
+            rvStr = [g_sdk checkAddressTRX:contextID address:[NSString stringWithCString:root["TRX"]["contracts"][sType]["receiver_address"].asCString() encoding:NSUTF8StringEncoding]];
+            unfreezeBalance.receiverAddress = [JUBTRXAmount StrToHex:rvStr.value];
+            
+            [contrTRX.parameter packWithMessage:unfreezeBalance error:nil];
+
+            break;
+        }
+        case Transaction_Contract_ContractType_CreateSmartContract:
+        {
+            //noting
+
+            break;
+        }
+        case Transaction_Contract_ContractType_TriggerSmartContract:
+        {
+            NSString * feeStr = [NSString stringWithCString:root["TRX"]["contracts"][sType]["fee_limit"].asCString() encoding:NSUTF8StringEncoding];
+            tx.feeLimit = feeStr.intValue;
             TriggerSmartContract *triggerSmart = [[TriggerSmartContract alloc]init];
             
-            CommonProtosResultString * rvStr = [[CommonProtosResultString alloc]init];
-            rvStr = [g_sdk checkAddressTRX:contextID address:[NSString stringWithCString:root["TRX"]["contracts"]["owner_address"].asCString() encoding:NSUTF8StringEncoding]];
-            triggerSmart.ownerAddress = [JUBTRXAmount StrToHex:rvStr.value];
-
-            triggerSmart.contractAddress = [JUBTRXAmount StrToHex:[NSString stringWithCString:root["TRX"]["contracts"]["contract_address"].asCString() encoding:NSUTF8StringEncoding]];
-
-            triggerSmart.data_p = [JUBTRXAmount StrToHex:[NSString stringWithCString:root["TRX"]["contracts"]["data"].asCString() encoding:NSUTF8StringEncoding]];
+            triggerSmart.ownerAddress = ownerAddressData;
+            
+            if (bERC20) {
+                triggerSmart.contractAddress = [JUBTRXAmount StrToHex:contractAddress];
+                triggerSmart.data_p = [JUBTRXAmount StrToHex:trc20Abi];
+            } else {
+                
+                CommonProtosResultString * rvStr = [[CommonProtosResultString alloc]init];
+                rvStr = [g_sdk checkAddressTRX:contextID address:[NSString stringWithCString:root["TRX"]["contracts"][sType]["contract_address"].asCString() encoding:NSUTF8StringEncoding]];
+                
+                triggerSmart.contractAddress =[JUBTRXAmount StrToHex:rvStr.value
+                                               ];
+                triggerSmart.data_p =  [JUBTRXAmount StrToHex:[NSString stringWithCString:root["TRX"]["contracts"][sType]["data"].asCString() encoding:NSUTF8StringEncoding]];
+            }
 
             triggerSmart.callValue = root["TRX"]["contracts"][sType]["call_value"].asUInt64();
             triggerSmart.callTokenValue = root["TRX"]["contracts"][sType]["call_token_value"].asUInt64();
@@ -449,40 +521,18 @@
         default:
         return JUBR_ARGUMENTS_BAD;
     }
-    
-//    tx.contracts = &contrTRX;
-//    tx.contractCount = 1;
     [tx.contractArray addObject:contrTRX];
-    
-    NSString * packContractInPb = [JUBTRXAmount HexToStr:tx.data];
-        
-//    JUB_CHAR_PTR packContractInPb = nullptr;
-//    rv = JUB_PackContractTRX(contextID, tx, &packContractInPb);
-//    if (JUBR_OK != rv) {
-//        [self addMsgData:[NSString stringWithFormat:@"[JUB_PackContractTRX() return %@ (0x%2lx).]", [JUBErrorCode GetErrMsg:rv], rv]];
-//        return rv;
-//    }
-//    [self addMsgData:[NSString stringWithFormat:@"[JUB_PackContractTRX() OK.]"]];
-//
-//    if (packContractInPb) {
-//        [self addMsgData:[NSString stringWithFormat:@"pack contract in protobuf(%lu): %s.", strlen(packContractInPb)/2, packContractInPb]];
-//    }
 
-//    BIP44_Path path;
-//    path.change = (JUB_ENUM_BOOL)root["TRX"]["bip32_path"]["change"].asBool();
-//    path.addressIndex = root["TRX"]["bip32_path"]["addressIndex"].asUInt();
+    NSString * packContractInPb = [JUBTRXAmount HexToStr:tx.data];
     
     CommonProtosBip44Path * path = [[CommonProtosBip44Path alloc]init];
     path.change = (JUB_ENUM_BOOL)root["TRX"]["bip32_path"]["change"].asBool();
-    path.addressIndex = root["TRX"]["bip32_path"]["addressIndex"].asUInt();
+    path.addressIndex = root["TRX"]["bip32_path"]["addressIndex"].asInt64();
     
     JUB_CHAR_PTR rawInJSON = nullptr;
     
-//    rv = JUB_SignTransactionTRX(contextID,
-//                                path,
-//                                packContractInPb,
-//                                &rawInJSON);
-    CommonProtosResultString * rvStr = [g_sdk signTransactionTRX:contextID pbPath:path packedContractInPb:packContractInPb];
+    NSLog(@"packContractInPb:%@---%d",packContractInPb,contrTRX.type);
+    rvStr = [g_sdk signTransactionTRX:contextID pbPath:path packedContractInPb:packContractInPb];
     rv = rvStr.stateCode;
     if (JUBR_OK != rv) {
         [self addMsgData:[NSString stringWithFormat:@"[JUB_SignTransactionTRX() return %@ (0x%2lx).]", [JUBErrorCode GetErrMsg:rv], rv]];
@@ -490,16 +540,9 @@
     }
     [self addMsgData:[NSString stringWithFormat:@"[JUB_SignTransactionTRX() OK.]"]];
     rawInJSON = (JUB_CHAR_PTR)rvStr.value.UTF8String;
-//    rv = JUB_FreeMemory(packContractInPb);
+
     if (rawInJSON) {
         [self addMsgData:[NSString stringWithFormat:@"tx raw in JSON: %s.", rawInJSON]];
-        
-//        rv = JUB_FreeMemory(rawInJSON);
-//        if (JUBR_OK != rv) {
-//            [self addMsgData:[NSString stringWithFormat:@"[JUB_FreeMemory() return %@ (0x%2lx).]", [JUBErrorCode GetErrMsg:rv], rv]];
-//            return rv;
-//        }
-//        [self addMsgData:[NSString stringWithFormat:@"[JUB_FreeMemory() OK.]"]];
     }
     
     return JUBR_OK;
