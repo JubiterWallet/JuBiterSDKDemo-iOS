@@ -30,6 +30,51 @@
     self.optItem = JUB_NS_ENUM_MAIN::OPT_TRX;
 }
 
+- (NSString *)inputResource
+{
+    __block NSString * resourceStr = @"";
+    __block BOOL isDone = NO;
+    JUBCustomInputAlert *  resourceAlert =[JUBCustomInputAlert showCallBack:^(NSString * _Nullable content, JUBDissAlertCallBack  _Nonnull dissAlertCallBack, JUBSetErrorCallBack  _Nonnull setErrorCallBack) {
+        resourceStr = content;
+        dissAlertCallBack();
+        isDone = YES;
+    } keyboardType:UIKeyboardTypeNumberPad];
+    resourceAlert.title = [JUBTRXAmount title:(JUB_NS_ENUM_TRX_OPT)self.selectedMenuIndex];
+    resourceAlert.message = [JUBTRXAmount message];
+    resourceAlert.textFieldPlaceholder = [JUBTRXAmount formatResourceRules];
+    resourceAlert.limitLength = 1;
+    
+    while (!isDone) {
+        [[NSRunLoop currentRunLoop] runMode:NSDefaultRunLoopMode
+                                 beforeDate:[NSDate distantFuture]];
+    }
+
+    
+    return resourceStr;
+}
+
+- (NSString *)inputDuration
+{
+    __block NSString * durationStr = @"";
+    __block BOOL isDone = NO;
+
+    JUBCustomInputAlert * durationAlert = [JUBCustomInputAlert showCallBack:^(NSString * _Nullable content, JUBDissAlertCallBack  _Nonnull dissAlertCallBack, JUBSetErrorCallBack  _Nonnull setErrorCallBack) {
+        durationStr = content;
+        dissAlertCallBack();
+        isDone = YES;
+    } keyboardType:UIKeyboardTypeNumberPad];
+    durationAlert.title = [JUBTRXAmount title:(JUB_NS_ENUM_TRX_OPT)self.selectedMenuIndex];
+    durationAlert.message = [JUBTRXAmount message];
+    durationAlert.textFieldPlaceholder = [JUBTRXAmount formatDurationRules];
+    durationAlert.limitLength = 2;
+    
+    
+    while (!isDone) {
+        [[NSRunLoop currentRunLoop] runMode:NSDefaultRunLoopMode
+                                 beforeDate:[NSDate distantFuture]];
+    }
+    return durationStr;
+}
 
 - (NSArray*) subMenu {
     return @[
@@ -430,6 +475,10 @@
             transfer.toAddress = [JUBTRXAmount StrToHex:rvStr.value];
 
             transfer.amount = root["TRX"]["contracts"][sType]["amount"].asUInt64();
+            if (NSComparisonResult::NSOrderedSame != [amount compare:@""]) {
+                transfer.amount = amount.intValue;
+                
+            }
             [contrTRX.parameter packWithMessage:transfer error:nil];
             
             break;
@@ -447,6 +496,9 @@
             transferAsset.toAddress = [JUBTRXAmount StrToHex:rvStr.value];
             
             transferAsset.amount = root["TRX"]["contracts"][sType]["amount"].asUInt();
+            if (NSComparisonResult::NSOrderedSame != [amount compare:@""]) {
+                transferAsset.amount = amount.intValue;
+            }
             [contrTRX.parameter packWithMessage:transferAsset error:nil];
 
             break;
@@ -459,9 +511,19 @@
             freezeBalance.ownerAddress = ownerAddressData;
             
             freezeBalance.frozenBalance = root["TRX"]["contracts"][sType]["frozen_balance"].asUInt64();
-            freezeBalance.frozenDuration = root["TRX"]["contracts"][sType]["frozen_duration"].asUInt64();
+            if (NSComparisonResult::NSOrderedSame != [amount compare:@""]) {
+                freezeBalance.frozenBalance = amount.intValue;
+            }
             freezeBalance.resource = (ResourceCode)root["TRX"]["contracts"][sType]["resource"].asUInt64();
-            
+            NSString * res = [self inputResource];
+            if (res.length && ([res isEqualToString:@"0"] || [res isEqualToString:@"1"])) {
+                freezeBalance.resource = (ResourceCode)res.intValue;
+            }
+            freezeBalance.frozenDuration = root["TRX"]["contracts"][sType]["frozen_duration"].asUInt64();
+            NSString * fDuration = [self inputDuration];
+            if (fDuration.length) {
+                freezeBalance.frozenDuration = fDuration.intValue;
+            }
             
             rvStr = [g_sdk checkAddressTRX:contextID address:[NSString stringWithCString:root["TRX"]["contracts"][sType]["receiver_address"].asCString() encoding:NSUTF8StringEncoding]];
 
@@ -477,7 +539,10 @@
             
             unfreezeBalance.ownerAddress = ownerAddressData;
             unfreezeBalance.resource = (ResourceCode)root["TRX"]["contracts"][sType]["resource"].asUInt64();
-            
+            NSString * res = [self inputResource];
+            if (res.length && ([res isEqualToString:@"0"] || [res isEqualToString:@"1"])) {
+                unfreezeBalance.resource = (ResourceCode)res.intValue;
+            }
             rvStr = [g_sdk checkAddressTRX:contextID address:[NSString stringWithCString:root["TRX"]["contracts"][sType]["receiver_address"].asCString() encoding:NSUTF8StringEncoding]];
             unfreezeBalance.receiverAddress = [JUBTRXAmount StrToHex:rvStr.value];
             

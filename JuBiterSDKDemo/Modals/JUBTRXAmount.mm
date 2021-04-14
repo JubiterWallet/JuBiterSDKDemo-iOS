@@ -22,6 +22,14 @@
     return [NSString stringWithFormat:@"Numbers or decimals (up to %lu decimal places).", decimalTRX];
 }
 
++(NSString*)formatResourceRules
+{
+    return @"Please enter 0 or 1(resource)";
+}
++(NSString*)formatDurationRules
+{
+    return @"Minimum 3 daysDuration()";
+}
 
 + (NSString*)enumUnitToString:(JUB_NS_ENUM_TRX_OPT)opt {
     
@@ -40,7 +48,24 @@
     
     NSString* strUnit = TITLE_UNIT_TRX;
     switch (opt) {
-    case JUB_NS_ENUM_TRX_OPT::BTN_TRX:
+        case JUB_NS_ENUM_TRX_OPT::BTN_TRX:
+                strUnit = @"TRX";
+                break;
+        case JUB_NS_ENUM_TRX_OPT::BTN_TRC10:
+                strUnit = @"TRC10";
+                break;
+        case JUB_NS_ENUM_TRX_OPT::BTN_TRCFree:
+                strUnit = @"TRCFree";
+                break;
+        case JUB_NS_ENUM_TRX_OPT::BTN_TRCUnfreeze:
+                strUnit = @"TRCUnfreeze";
+                break;
+        case JUB_NS_ENUM_TRX_OPT::BTN_TRC20:
+                strUnit = @"TRC20";
+                break;
+        case JUB_NS_ENUM_TRX_OPT::BTN_TRC20_transfer:
+                strUnit = @"TRC20_transfer";
+                break;
     default:
         break;
     }
