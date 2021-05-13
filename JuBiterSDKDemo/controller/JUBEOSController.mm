@@ -166,6 +166,21 @@
     }
     [self addMsgData:[NSString stringWithFormat:@"[JUB_FreeMemory() OK.]"]];
     
+    rv = JUB_GetMainHDNodeEOS(contextID, JUB_ENUM_PUB_FORMAT::XPUB, &pubkey);
+    if (JUBR_OK != rv) {
+        [self addMsgData:[NSString stringWithFormat:@"[JUB_GetMainHDNodeEOS() return %@ (0x%2lx).]", [JUBErrorCode GetErrMsg:rv], rv]];
+        return;
+    }
+    [self addMsgData:[NSString stringWithFormat:@"[JUB_GetMainHDNodeEOS() OK.]"]];
+    
+    [self addMsgData:[NSString stringWithFormat:@"MainXpub(%@) in xpub format: %s.", [sharedData currMainPath], pubkey]];
+    rv = JUB_FreeMemory(pubkey);
+    if (JUBR_OK != rv) {
+        [self addMsgData:[NSString stringWithFormat:@"[JUB_FreeMemory() return %@ (0x%2lx).]", [JUBErrorCode GetErrMsg:rv], rv]];
+        return;
+    }
+    [self addMsgData:[NSString stringWithFormat:@"[JUB_FreeMemory() OK.]"]];
+    
     BIP44_Path path;
     path.change       = [sharedData currPath].change;
     path.addressIndex = [sharedData currPath].addressIndex;
@@ -179,6 +194,21 @@
     [self addMsgData:[NSString stringWithFormat:@"[JUB_GetHDNodeEOS() OK.]"]];
     
     [self addMsgData:[NSString stringWithFormat:@"pubkey(%@/%d/%llu) in hex format: %s.", [sharedData currMainPath], path.change, path.addressIndex, pubkey]];
+    rv = JUB_FreeMemory(pubkey);
+    if (JUBR_OK != rv) {
+        [self addMsgData:[NSString stringWithFormat:@"[JUB_FreeMemory() return %@ (0x%2lx).]", [JUBErrorCode GetErrMsg:rv], rv]];
+        return;
+    }
+    [self addMsgData:[NSString stringWithFormat:@"[JUB_FreeMemory() OK.]"]];
+    
+    rv = JUB_GetHDNodeEOS(contextID, JUB_ENUM_PUB_FORMAT::XPUB, path, &pubkey);
+    if (JUBR_OK != rv) {
+        [self addMsgData:[NSString stringWithFormat:@"[JUB_GetHDNodeEOS() return %@ (0x%2lx).]", [JUBErrorCode GetErrMsg:rv], rv]];
+        return;
+    }
+    [self addMsgData:[NSString stringWithFormat:@"[JUB_GetHDNodeEOS() OK.]"]];
+    
+    [self addMsgData:[NSString stringWithFormat:@"pubkey(%@/%d/%llu) in xpub format: %s.", [sharedData currMainPath], path.change, path.addressIndex, pubkey]];
     rv = JUB_FreeMemory(pubkey);
     if (JUBR_OK != rv) {
         [self addMsgData:[NSString stringWithFormat:@"[JUB_FreeMemory() return %@ (0x%2lx).]", [JUBErrorCode GetErrMsg:rv], rv]];

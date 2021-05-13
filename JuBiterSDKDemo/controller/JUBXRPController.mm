@@ -119,7 +119,23 @@
     }
     [self addMsgData:[NSString stringWithFormat:@"[JUB_GetMainHDNodeXRP() OK.]"]];
     
-    [self addMsgData:[NSString stringWithFormat:@"Main xpub(%@): %s.", [sharedData currMainPath], mainXpub]];
+    [self addMsgData:[NSString stringWithFormat:@"MainXpub(%@) in hex format: %s.", [sharedData currMainPath], mainXpub]];
+    rv = JUB_FreeMemory(mainXpub);
+    if (JUBR_OK != rv) {
+        [self addMsgData:[NSString stringWithFormat:@"[JUB_FreeMemory() return %@ (0x%2lx).]", [JUBErrorCode GetErrMsg:rv], rv]];
+        return;
+    }
+    [self addMsgData:[NSString stringWithFormat:@"[JUB_FreeMemory() OK.]"]];
+    
+    
+    rv = JUB_GetMainHDNodeXRP(contextID, JUB_ENUM_PUB_FORMAT::XPUB, &mainXpub);
+    if (JUBR_OK != rv) {
+        [self addMsgData:[NSString stringWithFormat:@"[JUB_GetMainHDNodeXRP() return %@ (0x%2lx).]", [JUBErrorCode GetErrMsg:rv], rv]];
+        return;
+    }
+    [self addMsgData:[NSString stringWithFormat:@"[JUB_GetMainHDNodeXRP() OK.]"]];
+    
+    [self addMsgData:[NSString stringWithFormat:@"MainXpub(%@) in xpub format: %s.", [sharedData currMainPath], mainXpub]];
     rv = JUB_FreeMemory(mainXpub);
     if (JUBR_OK != rv) {
         [self addMsgData:[NSString stringWithFormat:@"[JUB_FreeMemory() return %@ (0x%2lx).]", [JUBErrorCode GetErrMsg:rv], rv]];
@@ -138,7 +154,21 @@
         return;
     }
     [self addMsgData:[NSString stringWithFormat:@"[JUB_GetHDNodeXRP() OK.]"]];
-    [self addMsgData:[NSString stringWithFormat:@"input xpub(%@/%u/%llu): %s.", [sharedData currMainPath], path.change, path.addressIndex, xpub]];
+    [self addMsgData:[NSString stringWithFormat:@"input xpub(%@/%u/%llu) in hex format: %s.", [sharedData currMainPath], path.change, path.addressIndex, xpub]];
+    rv = JUB_FreeMemory(xpub);
+    if (JUBR_OK != rv) {
+        [self addMsgData:[NSString stringWithFormat:@"[JUB_FreeMemory() return %@ (0x%2lx).]", [JUBErrorCode GetErrMsg:rv], rv]];
+        return;
+    }
+    [self addMsgData:[NSString stringWithFormat:@"[JUB_FreeMemory() OK.]"]];
+    
+    rv = JUB_GetHDNodeXRP(contextID, JUB_ENUM_PUB_FORMAT::XPUB, path, &xpub);
+    if (JUBR_OK != rv) {
+        [self addMsgData:[NSString stringWithFormat:@"[JUB_GetHDNodeXRP() return %@ (0x%2lx).]", [JUBErrorCode GetErrMsg:rv], rv]];
+        return;
+    }
+    [self addMsgData:[NSString stringWithFormat:@"[JUB_GetHDNodeXRP() OK.]"]];
+    [self addMsgData:[NSString stringWithFormat:@"input xpub(%@/%u/%llu) in xpub format: %s.", [sharedData currMainPath], path.change, path.addressIndex, xpub]];
     rv = JUB_FreeMemory(xpub);
     if (JUBR_OK != rv) {
         [self addMsgData:[NSString stringWithFormat:@"[JUB_FreeMemory() return %@ (0x%2lx).]", [JUBErrorCode GetErrMsg:rv], rv]];

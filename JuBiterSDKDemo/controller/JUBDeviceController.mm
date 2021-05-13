@@ -361,7 +361,7 @@
                                                                                    encoding:[NSString defaultCStringEncoding]]]) {
             continue;
         }
-        char* version;
+        JUB_VERSION version;
         auto rv = JUB_GetAppletVersion(deviceID, [appID UTF8String], &version);
         if (JUBR_OK != rv) {
             [self addMsgData:[NSString stringWithFormat:@"[JUB_GetAppletVersion return %@ (0x%2lx).]", [JUBErrorCode GetErrMsg:rv], rv]];
