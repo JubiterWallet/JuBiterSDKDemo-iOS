@@ -610,7 +610,7 @@
         input.amount = root["inputs"][i]["amount"].asUInt64();
 
         [pbTransaction.inputsArray addObject:input];
-        selfdefInput = input;
+        selfdefInput = input.copy;
     }
     if (NSComparisonResult::NSOrderedSame != [amount compare:@""]) {
         selfdefInput.amount = [amount longLongValue];
@@ -672,11 +672,20 @@
         selfdefOutput = output;
     }
     if (NSComparisonResult::NSOrderedSame != [amount compare:@""]) {
-//        selfdefOutput.stdOutput.changeAddress = JUB_ENUM_BOOL::BOOL_FALSE;
+        
         selfdefOutput.stdOutput.changeAddress = NO;
         selfdefOutput.stdOutput.amount = [amount longLongValue];
-//        outputs.push_back(selfdefOutput);
-        [pbTransaction.outputsArray addObject:selfdefOutput];
+        if (selfdefOutput.stdOutput.amount%4) {
+            [pbTransaction.outputsArray addObject:selfdefOutput];
+        }
+        else {
+            selfdefOutput.stdOutput.amount = [amount longLongValue]/4;
+            [pbTransaction.outputsArray addObject:selfdefOutput];
+            BitcoinProtosOutputBTC * selfdefOutput1 = [[BitcoinProtosOutputBTC alloc]init];
+            selfdefOutput1 = selfdefOutput.copy;
+            selfdefOutput.stdOutput.amount *= 3;
+            [pbTransaction.outputsArray addObject:selfdefOutput1];
+        }
     }
     
 //    char* raw = nullptr;

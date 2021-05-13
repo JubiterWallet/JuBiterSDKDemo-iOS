@@ -22,6 +22,7 @@
 #import "JUBEOSController.h"
 #import "JUBXRPController.h"
 #import "JUBTRXController.h"
+#import "JUBFILController.h"
 
 
 @interface JUBHomePageController ()
@@ -273,6 +274,7 @@
         BUTTON_TITLE_EOS,
         BUTTON_TITLE_XRP,
         BUTTON_TITLE_TRX,
+        BUTTON_TITLE_FIL,
     ];
     
     NSMutableArray *buttonModelArray = [NSMutableArray array];
@@ -407,6 +409,11 @@
         vc = [[JUBTRXController alloc] init];
         break;
     }
+    case JUB_NS_ENUM_MAIN::OPT_FIL:
+    {
+        vc = [[JUBFILController alloc]init];
+        break;
+    }
     default:
         return;
     }   // switch (optType) end
@@ -439,7 +446,8 @@
         return;
     }
     
-    rv = JUB_enumDevices();
+//    rv = JUB_enumDevices();
+    rv = [g_sdk enumDevices];
     if (JUBR_OK != rv) {
         
         [self addMsgData:[NSString stringWithFormat:@"[JUB_enumDevices() return %@ (0x%lx).]", [JUBErrorCode GetErrMsg:rv], rv]];
