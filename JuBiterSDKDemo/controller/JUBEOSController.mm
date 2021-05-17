@@ -25,7 +25,7 @@
     // Do any additional setup after loading the view.
     
     self.title = @"EOS options";
-    
+    self.buttonArray[3].disEnable = YES;
     self.optItem = JUB_NS_ENUM_MAIN::OPT_EOS;
 }
 
@@ -259,41 +259,6 @@
 //    }
 //    [self addMsgData:[NSString stringWithFormat:@"[JUB_FreeMemory() OK.]"]];
 }
-
-
-- (NSUInteger) set_my_address_proc:(NSUInteger)contextID {
-    
-    JUB_RV rv = JUBR_ERROR;
-    
-    JUBSharedData *sharedData = [JUBSharedData sharedInstance];
-    if (nil == sharedData) {
-        return rv;
-    }
-    CommonProtosResultString * rvStr = [[CommonProtosResultString alloc]init];
-
-//    BIP44_Path path;
-//    path.change       = [sharedData currPath].change;
-//    path.addressIndex = [sharedData currPath].addressIndex;
-    
-    CommonProtosBip44Path * path = [[CommonProtosBip44Path alloc]init];
-    path.change       = [sharedData currPath].change;
-    path.addressIndex = [sharedData currPath].addressIndex;
-    
-    JUB_CHAR_PTR address = nullptr;
-//    rv = JUB_SetMyAddressEOS(contextID, path, &address);
-    rvStr = [g_sdk setMyAddressEOS:contextID pbPath:path];
-    rv = rvStr.stateCode;
-    if (JUBR_OK != rv) {
-        [self addMsgData:[NSString stringWithFormat:@"[JUB_SetMyAddressEOS() return %@ (0x%2lx).]", [JUBErrorCode GetErrMsg:rv], rv]];
-        return rv;
-    }
-    address = (JUB_CHAR_PTR)rvStr.value.UTF8String;
-    [self addMsgData:[NSString stringWithFormat:@"[JUB_SetMyAddressEOS() OK.]"]];
-    [self addMsgData:[NSString stringWithFormat:@"Set my address(%@/%u/%llu) is: %s.", [sharedData currMainPath], path.change, path.addressIndex, address]];
-    
-    return rv;
-}
-
 
 - (NSString*) inputAmount {
     
