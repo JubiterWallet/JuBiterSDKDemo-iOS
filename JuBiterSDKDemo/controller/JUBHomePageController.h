@@ -27,7 +27,7 @@ NS_ASSUME_NONNULL_BEGIN
 #define BUTTON_TITLE_EOS        @"EOS"
 #define BUTTON_TITLE_XRP        @"XRP"
 #define BUTTON_TITLE_TRX        @"TRX"
-
+#define BUTTON_TITLE_FIL        @"FIL"
 
 typedef NS_ENUM(NSInteger, JUB_NS_ENUM_MAIN) {
     OPT_SENDAPDU,
@@ -37,7 +37,8 @@ typedef NS_ENUM(NSInteger, JUB_NS_ENUM_MAIN) {
     OPT_ETH,
     OPT_EOS,
     OPT_XRP,
-    OPT_TRX
+    OPT_TRX,
+    OPT_FIL
 };
 
 

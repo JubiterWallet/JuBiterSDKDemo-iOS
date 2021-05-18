@@ -135,6 +135,27 @@ void BLEDiscFuncCallBack(JUB_BYTE_PTR uuid) {
 //    [data setSelfClass:self.selfClass];
     [sharedData setOptItem:self.optItem];
     
+    NSString *subID = @"subjectID";
+    if ([sharedData deviceCert]) {
+        JUB_CHAR_PTR sn = nullptr;
+        JUB_CHAR_PTR subjectID = nullptr;
+        JUB_RV rv = JUB_ParseDeviceCert((char*)[[sharedData deviceCert] UTF8String], &sn, &subjectID);
+        if (JUBR_OK != rv) {
+            [cSelf addMsgData:[NSString stringWithFormat:@"[JUB_ParseDeviceCert() ERROR.]"]];
+            return;
+        }
+        [cSelf addMsgData:[NSString stringWithFormat:@"[JUB_ParseDeviceCert() OK.]"]];
+        
+        subID = [NSString stringWithFormat:@"%s", subjectID];
+        
+        if (sn) {
+            JUB_FreeMemory(sn);
+        }
+        if (subjectID) {
+            JUB_FreeMemory(subjectID);
+        }
+    }
+    
     std::string fileName = "42584E46433230303532353030303031_apk";
 //    std::string fileName = "42584E46433230303532353030303032_apk";
     NSString *filePath = [[NSBundle mainBundle] pathForResource:[NSString stringWithFormat:@"%s", fileName.c_str()]
@@ -148,6 +169,7 @@ void BLEDiscFuncCallBack(JUB_BYTE_PTR uuid) {
     param.sk  = (char*)root["SCP11c"]["OCE"][1][2].asCString();
     param.hostID = (char*)root["SCP11c"]["HostID"].asCString();
     param.keyLength = root["SCP11c"]["KeyLength"].asUInt();
+    param.cardGroupID = (char*)[subID UTF8String];
     JUB_RV rv = JUB_initNFCDevice(param);
     if (JUBR_OK != rv) {
         [cSelf addMsgData:[NSString stringWithFormat:@"[JUB_initNFCDevice() ERROR.]"]];
@@ -216,6 +238,11 @@ void BLEDiscFuncCallBack(JUB_BYTE_PTR uuid) {
         [self CoinTRXOpt:deviceID];
         break;
     }
+    case JUB_NS_ENUM_MAIN::OPT_FIL:
+    {
+        [self CoinFILOpt:deviceID];
+        break;
+    }
     default:
         break;
     }   // switch (data.optItem) end
@@ -257,4 +284,8 @@ void BLEDiscFuncCallBack(JUB_BYTE_PTR uuid) {
     
 }
 
+#pragma mark - FIL 通讯库卡回调
+- (void) CoinFILOpt:(NSUInteger)deviceID{
+    
+}
 @end

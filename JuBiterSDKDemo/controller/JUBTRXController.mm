@@ -26,7 +26,7 @@
     
     self.title = @"TRX options";
     self.transferType = Transaction_Contract_ContractType_AccountCreateContract;
-    
+    self.buttonArray[3].disEnable = YES;
     self.optItem = JUB_NS_ENUM_MAIN::OPT_TRX;
 }
 
@@ -272,39 +272,6 @@
 //    [self addMsgData:[NSString stringWithFormat:@"[JUB_FreeMemory() OK.]"]];
 }
 
-
-- (NSUInteger) set_my_address_proc:(NSUInteger)contextID {
-    
-    JUB_RV rv = JUBR_ERROR;
-    CommonProtosResultString * rvStr = [[CommonProtosResultString alloc]init];
-    JUBSharedData *sharedData = [JUBSharedData sharedInstance];
-    if (nil == sharedData) {
-        return rv;
-    }
-    
-//    BIP44_Path path;
-//    path.change       = [sharedData currPath].change;
-//    path.addressIndex = [sharedData currPath].addressIndex;
-    CommonProtosBip44Path * path = [[CommonProtosBip44Path alloc]init];
-    path.change       = [sharedData currPath].change;
-    path.addressIndex = [sharedData currPath].addressIndex;
-    
-    JUB_CHAR_PTR address = nullptr;
-//    rv = JUB_SetMyAddressTRX(contextID, path, &address);
-    rvStr = [g_sdk setMyAddressTRX:contextID pbPath:path];
-    rv = rvStr.stateCode;
-    if (JUBR_OK != rv) {
-        [self addMsgData:[NSString stringWithFormat:@"[JUB_SetMyAddressTRX() return %@ (0x%2lx).]", [JUBErrorCode GetErrMsg:rv], rv]];
-        return rv;
-    }
-    address = (JUB_CHAR_PTR)rvStr.value.UTF8String;
-    [self addMsgData:[NSString stringWithFormat:@"[JUB_SetMyAddressTRX() OK.]"]];
-    [self addMsgData:[NSString stringWithFormat:@"Set my address(%@/%u/%llu) is: %s.", [sharedData currMainPath], path.change, path.addressIndex, address]];
-    
-    return rv;
-}
-
-
 - (NSString*) inputAmount {
     
     __block
@@ -429,6 +396,21 @@
         }
     }
     
+    
+    NSString * contractAddress = rvStr.value;
+    
+    if (contrTRX.type == Transaction_Contract_ContractType_TransferAssetContract) {
+        NSString * assetName = [NSString stringWithCString:root["TRX"]["TRC10"]["assetName"].asCString() encoding:NSUTF8StringEncoding];
+        NSString * assetID = [NSString stringWithCString:root["TRX"]["TRC10"]["assetID"].asCString() encoding:NSUTF8StringEncoding];
+        NSInteger unitDP = root["TRX"]["TRC10"]["dp"].asUInt64();
+        
+        rv = [g_sdk setTRC10Asset:contextID assetName:assetName unitDP:unitDP assetID:assetID];
+        if (JUBR_OK != rv) {
+            [self addMsgData:[NSString stringWithFormat:@"[JUB_setTRC10Asset() return %@ (0x%2lx).]", [JUBErrorCode GetErrMsg:rv], rv]];
+            return rv;
+        }
+    }
+    
     BOOL bERC20 = NO;
     if (32 == contrTRX.type) {
         bERC20 = YES;
@@ -530,6 +512,11 @@
             freezeBalance.receiverAddress = [JUBTRXAmount StrToHex:rvStr.value];
             [contrTRX.parameter packWithMessage:freezeBalance error:nil];
             
+            
+            rvStr = [g_sdk checkAddressTRX:contextID address:[NSString stringWithCString:root["TRX"]["contracts"][sType]["receiver_address"].asCString() encoding:NSUTF8StringEncoding]];
+
+            freezeBalance.receiverAddress = [JUBTRXAmount StrToHex:rvStr.value];
+            [contrTRX.parameter packWithMessage:freezeBalance error:nil];
             break;
         }
         case Transaction_Contract_ContractType_UnfreezeBalanceContract:

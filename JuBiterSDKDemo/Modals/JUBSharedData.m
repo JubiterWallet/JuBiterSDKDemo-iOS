@@ -30,11 +30,12 @@ static JUBSharedData *_sharedDataInstance;
         
         _userPin = nil;
         _neoPin = nil;
+        _deviceCert = nil;
         
         _verifyMode = VERIFY_MODE_ITEM;
         _deviceType = SEG_NFC;
 //        _coinUnit = mBTC;
-        _coinUnit = BitcoinProtosBTC_UNIT_TYPE_Btc;
+        _coinUnit = BitcoinProtosBTC_UNIT_TYPE_MBtc;
         _comMode = COMMODE_NS_ITEM;
         _deviceClass = DEVICE_NS_ITEM;
 
