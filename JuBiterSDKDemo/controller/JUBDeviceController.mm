@@ -113,6 +113,15 @@
     case JUB_NS_ENUM_DEV_OPT::DEVICE_CERT:
     case JUB_NS_ENUM_DEV_OPT::DEVICE_RESET:
     {
+        if ([sharedData deviceType] == JUB_NS_ENUM_DEV_TYPE::SEG_NFC
+            && JUB_NS_ENUM_DEV_OPT::DEVICE_RESET == self.optIndex
+            ) {
+            if (![sharedData deviceCert]) {
+                [JUBWarningAlert warningSureAlert:@"To use this feature, please click DEVICE_CERT"];
+                return;;
+            }
+        }
+        
         switch (self.selectedTransmitTypeIndex) {
         case JUB_NS_ENUM_DEV_TYPE::SEG_NFC:
         {
@@ -131,6 +140,13 @@
     }
     case JUB_NS_ENUM_DEV_OPT::DEVICE_CHANGEPIN:
     {
+        if ([sharedData deviceType] == JUB_NS_ENUM_DEV_TYPE::SEG_NFC) {
+            if (![sharedData deviceCert]) {
+                [JUBWarningAlert warningSureAlert:@"To use this feature, please click DEVICE_CERT"];
+                return;;
+            }
+        }
+        
         [JUBPinAlert showChangePinCallBack:^(NSString * _Nonnull oldPin,
                                               NSString * _Nonnull newPin) {
             if (   nil == oldPin
@@ -161,6 +177,13 @@
     case JUB_NS_ENUM_DEV_OPT::IMPORT_MNEMONIC24:
     case JUB_NS_ENUM_DEV_OPT::EXPORT_MNEMONIC:
     {
+        if ([sharedData deviceType] == JUB_NS_ENUM_DEV_TYPE::SEG_NFC) {
+            if (![sharedData deviceCert]) {
+                [JUBWarningAlert warningSureAlert:@"To use this feature, please click DEVICE_CERT"];
+                return;;
+            }
+        }
+        
         [JUBPinAlert showInputPinCallBack:^(NSString * _Nonnull pin) {
             if (!pin) {
 //                rv = JUBR_USER_CANCEL;
@@ -368,8 +391,7 @@
             return;
         }
         [self addMsgData:[NSString stringWithFormat:@"[JUB_GetAppletVersion() OK.]"]];
-        
-        [self addMsgData:[NSString stringWithFormat:@"Applet Version: %s.", version]];
+        [self addMsgData:[NSString stringWithFormat:@"Applet Version: %i.%i.%i", version.major, version.minor, version.patch]];
     }
     
     JUB_CHAR_PTR coinList;
@@ -396,6 +418,11 @@
     
     JUB_RV rv = JUBR_ERROR;
     
+    JUBSharedData *sharedData = [JUBSharedData sharedInstance];
+    if (nil == sharedData) {
+        return;
+    }
+    
     JUB_CHAR_PTR cert;
     rv = JUB_GetDeviceCert(deviceID, &cert);
     if (JUBR_OK != rv) {
@@ -403,8 +430,10 @@
         return;
     }
     [self addMsgData:[NSString stringWithFormat:@"[JUB_GetDeviceCert() OK.]"]];
-    
     [self addMsgData:[NSString stringWithFormat:@"Device Cert is %s.", cert]];
+    
+    sharedData.deviceCert = [NSString stringWithFormat:@"%s",cert];
+    
     rv = JUB_FreeMemory(cert);
     if (JUBR_OK != rv) {
         [self addMsgData:[NSString stringWithFormat:@"[JUB_FreeMemory() return %@ 0x%2lx.]", [JUBErrorCode GetErrMsg:rv], rv]];

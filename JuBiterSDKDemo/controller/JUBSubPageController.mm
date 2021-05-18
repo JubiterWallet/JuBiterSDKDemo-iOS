@@ -127,6 +127,8 @@ void BLEDiscFuncCallBack(JUB_BYTE_PTR uuid) {
 
 - (void) beginNFCSession {
     
+    JUB_RV rv = JUBR_ERROR;
+    
     JUBSharedData *sharedData = [JUBSharedData sharedInstance];
     if (nil == sharedData) {
         return;
@@ -134,8 +136,30 @@ void BLEDiscFuncCallBack(JUB_BYTE_PTR uuid) {
     
 //    [data setSelfClass:self.selfClass];
     [sharedData setOptItem:self.optItem];
+
+    NSString *subID = @"subjectID";
+    if ([sharedData deviceCert]) {
+        JUB_CHAR_PTR sn = nullptr;
+        JUB_CHAR_PTR subjectID = nullptr;
+        rv = JUB_ParseDeviceCert((char*)[[sharedData deviceCert] UTF8String], &sn, &subjectID);
+        if (JUBR_OK != rv) {
+            [cSelf addMsgData:[NSString stringWithFormat:@"[JUB_ParseDeviceCert() ERROR.]"]];
+            return;
+        }
+        [cSelf addMsgData:[NSString stringWithFormat:@"[JUB_ParseDeviceCert() OK.]"]];
+        
+        subID = [NSString stringWithFormat:@"%s", subjectID];
+        
+        if (sn) {
+            JUB_FreeMemory(sn);
+        }
+        if (subjectID) {
+            JUB_FreeMemory(subjectID);
+        }
+    }
     
-    std::string fileName = "42584E46433230303532353030303031_apk";
+//    std::string fileName = "42584E46433230303532353030303031_apk";
+    std::string fileName = "42584E46433230303532353030303031_oce";
 //    std::string fileName = "42584E46433230303532353030303032_apk";
     NSString *filePath = [[NSBundle mainBundle] pathForResource:[NSString stringWithFormat:@"%s", fileName.c_str()]
                                                          ofType:@"settings"];
@@ -148,12 +172,14 @@ void BLEDiscFuncCallBack(JUB_BYTE_PTR uuid) {
     param.sk  = (char*)root["SCP11c"]["OCE"][1][2].asCString();
     param.hostID = (char*)root["SCP11c"]["HostID"].asCString();
     param.keyLength = root["SCP11c"]["KeyLength"].asUInt();
-    JUB_RV rv = JUB_initNFCDevice(param);
+    param.cardGroupID = (char*)[subID UTF8String];
+    rv = JUB_initNFCDevice(param);
     if (JUBR_OK != rv) {
         [cSelf addMsgData:[NSString stringWithFormat:@"[JUB_initNFCDevice() ERROR.]"]];
         return;
     }
     [cSelf addMsgData:[NSString stringWithFormat:@"[JUB_initNFCDevice() OK.]"]];
+    
 }
 
 
@@ -254,6 +280,12 @@ void BLEDiscFuncCallBack(JUB_BYTE_PTR uuid) {
 
 #pragma mark - TRX 通讯库寻卡回调
 - (void) CoinTRXOpt:(NSUInteger)deviceID {
+    
+}
+
+
+#pragma mark - FIL 通讯库寻卡回调
+- (void) CoinFILOpt:(NSUInteger)deviceID {
     
 }
 
