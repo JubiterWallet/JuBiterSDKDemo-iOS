@@ -396,21 +396,6 @@
         }
     }
     
-    
-    NSString * contractAddress = rvStr.value;
-    
-    if (contrTRX.type == Transaction_Contract_ContractType_TransferAssetContract) {
-        NSString * assetName = [NSString stringWithCString:root["TRX"]["TRC10"]["assetName"].asCString() encoding:NSUTF8StringEncoding];
-        NSString * assetID = [NSString stringWithCString:root["TRX"]["TRC10"]["assetID"].asCString() encoding:NSUTF8StringEncoding];
-        NSInteger unitDP = root["TRX"]["TRC10"]["dp"].asUInt64();
-        
-        rv = [g_sdk setTRC10Asset:contextID assetName:assetName unitDP:unitDP assetID:assetID];
-        if (JUBR_OK != rv) {
-            [self addMsgData:[NSString stringWithFormat:@"[JUB_setTRC10Asset() return %@ (0x%2lx).]", [JUBErrorCode GetErrMsg:rv], rv]];
-            return rv;
-        }
-    }
-    
     BOOL bERC20 = NO;
     if (32 == contrTRX.type) {
         bERC20 = YES;
