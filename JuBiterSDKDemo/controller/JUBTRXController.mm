@@ -28,6 +28,7 @@
     self.title = @"TRX options";
     self.transferType = JUB_ENUM_TRX_CONTRACT_TYPE::NS_ITEM_TRX_CONTRACT;
     self.optItem = JUB_NS_ENUM_MAIN::OPT_TRX;
+    self.buttonArray[3].disEnable = YES;
 }
 
 
@@ -38,7 +39,8 @@
         BUTTON_TITLE_TRCFree,
         BUTTON_TITLE_TRCUnfreeze,
         BUTTON_TITLE_TRC20,
-        BUTTON_TITLE_TRC20_TRANSFER
+        BUTTON_TITLE_TRC20_TRANSFER,
+        BUTTON_TITLE_TRC721
     ];
 }
 - (JUB_ENUM_TRX_CONTRACT_TYPE)TransferType
@@ -61,6 +63,9 @@
             break;
         case 5:
             self.transferType = (JUB_ENUM_TRX_CONTRACT_TYPE)32;
+            break;
+        case 6:
+            self.transferType = (JUB_ENUM_TRX_CONTRACT_TYPE)33;
             break;
     default:
         break;
@@ -423,9 +428,14 @@
     }
     
     bool bERC20 = false;
+    bool bERC721 = false;
     if ((JUB_ENUM_TRX_CONTRACT_TYPE)32 == contrTRX.type) {
         contrTRX.type = JUB_ENUM_TRX_CONTRACT_TYPE::TRIG_SMART_CONTRACT;
         bERC20 = true;
+    }
+    if ((JUB_ENUM_TRX_CONTRACT_TYPE)33 == contrTRX.type) {
+        contrTRX.type = JUB_ENUM_TRX_CONTRACT_TYPE::TRIG_SMART_CONTRACT;
+        bERC721 = true;
     }
     
     std::string strType = std::to_string((unsigned int)contrTRX.type);
@@ -433,21 +443,38 @@
     memset(sType, 0x00, strType.length()+1);
     std::copy(strType.begin(), strType.end(), sType);
     
-    JUB_CHAR_PTR trc20Abi = nullptr;
+    JUB_CHAR_PTR trcAbi = nullptr;
     if (bERC20) {
-        string tokenName = (char*)root["TRX"]["TRC20"]["tokenName"].asCString();
+        JUB_CHAR_PTR tokenName = (JUB_CHAR_PTR)root["TRX"]["TRC20"]["tokenName"].asCString();
         JUB_UINT16 unitDP = root["TRX"]["TRC20"]["dp"].asUInt64();
-        string tokenTo = (char*)root["TRX"]["TRC20"]["token_to"].asCString();
-        string tokenValue = (char*)root["TRX"]["TRC20"]["token_value"].asCString();
+        JUB_CHAR_PTR tokenTo = (JUB_CHAR_PTR)root["TRX"]["TRC20"]["token_to"].asCString();
+        JUB_CHAR_PTR tokenValue = (JUB_CHAR_PTR)root["TRX"]["TRC20"]["token_value"].asCString();
 
         rv = JUB_BuildTRC20Abi(contextID,
-                               tokenName.c_str(),
+                               tokenName,
                                unitDP,
                                contractAddress,
-                               tokenTo.c_str(), tokenValue.c_str(),
-                               &trc20Abi);
+                               tokenTo, tokenValue,
+                               &trcAbi);
         if (JUBR_OK != rv) {
             [self addMsgData:[NSString stringWithFormat:@"[JUB_BuildTRC20Abi() return %@ (0x%2lx).]", [JUBErrorCode GetErrMsg:rv], rv]];
+            return rv;
+        }
+    }
+    if (bERC721) {
+        contractAddress   = (JUB_CHAR_PTR)root["TRX"]["TRC721"]["contract_address"].asCString();
+        JUB_CHAR_PTR tokenName  = (JUB_CHAR_PTR)root["TRX"]["TRC721"]["tokenName"].asCString();
+        JUB_CHAR_PTR tokenFrom  = (JUB_CHAR_PTR)root["TRX"]["TRC721"]["token_from"].asCString();
+        JUB_CHAR_PTR tokenTo    = (JUB_CHAR_PTR)root["TRX"]["TRC721"]["token_to"].asCString();
+        JUB_CHAR_PTR tokenID    = (JUB_CHAR_PTR)root["TRX"]["TRC721"]["tokenID"].asCString();
+
+        rv = JUB_BuildTRC721Abi(contextID,
+                               tokenName,
+                               contractAddress,
+                               tokenFrom, tokenTo, tokenID,
+                               &trcAbi);
+        if (JUBR_OK != rv) {
+            [self addMsgData:[NSString stringWithFormat:@"[JUB_BuildTRC721Abi() return %@ (0x%2lx).]", [JUBErrorCode GetErrMsg:rv], rv]];
             return rv;
         }
     }
@@ -521,9 +548,9 @@
         {
             tx.fee_limit = (char*)root["TRX"]["contracts"][sType]["fee_limit"].asCString();
             contrTRX.triggerSmart.owner_address = strOwnerAddress;
-            if (bERC20) {
+            if (bERC20 || bERC721) {
                 contrTRX.triggerSmart.contract_address = contractAddress;
-                contrTRX.triggerSmart.data = trc20Abi;
+                contrTRX.triggerSmart.data = trcAbi;
             }
             else {
                 contrTRX.triggerSmart.contract_address = (char*)root["TRX"]["contracts"][sType]["contract_address"].asCString();

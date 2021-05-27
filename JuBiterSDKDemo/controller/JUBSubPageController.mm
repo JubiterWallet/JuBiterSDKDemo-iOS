@@ -242,6 +242,11 @@ void BLEDiscFuncCallBack(JUB_BYTE_PTR uuid) {
         [self CoinTRXOpt:deviceID];
         break;
     }
+    case JUB_NS_ENUM_MAIN::OPT_FIL:
+    {
+        [self CoinFILOpt:deviceID];
+        break;
+    }
     default:
         break;
     }   // switch (data.optItem) end

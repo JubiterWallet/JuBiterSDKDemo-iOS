@@ -35,6 +35,7 @@
     return @[
         BUTTON_TITLE_ETH,
         BUTTON_TITLE_ETH_ERC20,
+        BUTTON_TITLE_ETH_ERC721,
         BUTTON_TITLE_ETH_UNISWAP,
         BUTTON_TITLE_ETH_BYTESTR,
 //        BUTTON_TITLE_ETC
@@ -49,6 +50,7 @@
     switch (self.selectedMenuIndex) {
     case JUB_NS_ENUM_ETH_COIN::BTN_ETH:
     case JUB_NS_ENUM_ETH_COIN::BTN_ETH_ERC20:
+    case JUB_NS_ENUM_ETH_COIN::BTN_ETH_ERC721:
     case JUB_NS_ENUM_ETH_COIN::BTN_ETH_UNISWAP:
     case JUB_NS_ENUM_ETH_COIN::BTN_ETH_BYTESTR:
     {
@@ -360,6 +362,11 @@
                                   amount:amount
                                     root:root];
         break;
+    case JUB_NS_ENUM_ETH_COIN::BTN_ETH_ERC721:
+        rv = [self transactionERC721_proc:contextID
+                                  amount:amount
+                                    root:root];
+        break;
     case JUB_NS_ENUM_ETH_COIN::BTN_ETH_UNISWAP:
         rv = [self transactionUNISWAP_proc:contextID amount:amount root:root];
         break;
@@ -494,6 +501,70 @@
     
     return rv;
 }
+
+//ERC-721 Test
+- (NSUInteger) transactionERC721_proc:(NSUInteger)contextID
+                              amount:(NSString*)amount
+                                root:(Json::Value)root {
+    
+    JUB_RV rv = JUBR_ERROR;
+    
+    JUB_CHAR_PTR tokenName = (JUB_CHAR_PTR)root["ERC721"]["tokenName"].asCString();
+    JUB_CHAR_PTR contractAddress = (JUB_CHAR_PTR)root["ERC721"]["contract_address"].asCString();
+    JUB_CHAR_PTR token_from = (JUB_CHAR_PTR)root["ERC721"]["token_from"].asCString();
+    JUB_CHAR_PTR to = (JUB_CHAR_PTR)root["ERC721"]["contract_address"].asCString();
+    JUB_CHAR_PTR token_to = (JUB_CHAR_PTR)root["ERC721"]["token_to"].asCString();
+    JUB_CHAR_PTR tokenID = (JUB_CHAR_PTR)root["ERC721"]["tokenID"].asCString();
+
+    JUB_CHAR_PTR abi = nullptr;
+    rv = JUB_BuildERC721AbiETH(contextID,
+                               tokenName, contractAddress,
+                               token_from, token_to, tokenID,
+                               &abi);
+    if (JUBR_OK != rv) {
+        [self addMsgData:[NSString stringWithFormat:@"[JUB_BuildERC721AbiETH() return %@ (0x%2lx).]", [JUBErrorCode GetErrMsg:rv], rv]];
+        return rv;
+    }
+    [self addMsgData:[NSString stringWithFormat:@"[JUB_BuildERC721AbiETH() OK.]"]];
+    
+    if (abi) {
+        size_t abiLen = strlen(abi)/2;
+        [self addMsgData:[NSString stringWithFormat:@"erc721 raw[%lu]: %s.", abiLen, abi]];
+    }
+    
+    BIP44_Path path;
+    path.change = (JUB_ENUM_BOOL)root["ERC721"]["bip32_path"]["change"].asBool();
+    path.addressIndex = root["ERC721"]["bip32_path"]["addressIndex"].asUInt();
+
+    uint32_t nonce = root["ERC721"]["nonce"].asUInt();//.asDouble();
+    uint32_t gasLimit = root["ERC721"]["gasLimit"].asUInt();//.asDouble();
+    JUB_CHAR_PTR gasPriceInWei = (JUB_CHAR_PTR)root["ERC721"]["gasPriceInWei"].asCString();
+    JUB_CHAR_PTR valueInWei = nullptr; //"" and "0" ara also OK
+    JUB_CHAR_PTR raw = nullptr;
+    rv = JUB_SignTransactionETH(contextID, path, nonce, gasLimit, gasPriceInWei, to, valueInWei, abi, &raw);
+    
+    if (JUBR_OK != rv) {
+        [self addMsgData:[NSString stringWithFormat:@"[JUB_SignTransactionETH() return %@ (0x%2lx).]", [JUBErrorCode GetErrMsg:rv], rv]];
+        return rv;
+    }
+    [self addMsgData:[NSString stringWithFormat:@"[JUB_SignTransactionETH() OK.]"]];
+    
+    rv = JUB_FreeMemory(abi);
+    if (raw) {
+        size_t txLen = strlen(raw)/2;
+        [self addMsgData:[NSString stringWithFormat:@"tx raw[%lu]: %s.", txLen, raw]];
+        
+        rv = JUB_FreeMemory(raw);
+        if (JUBR_OK != rv) {
+            [self addMsgData:[NSString stringWithFormat:@"[JUB_FreeMemory() return %@ (0x%2lx).]", [JUBErrorCode GetErrMsg:rv], rv]];
+            return rv;
+        }
+        [self addMsgData:[NSString stringWithFormat:@"[JUB_FreeMemory() OK.]"]];
+    }
+    
+    return rv;
+}
+
 
 //ETH-UNISWAP Test
 - (NSUInteger) transactionUNISWAP_proc:(NSUInteger)contextID

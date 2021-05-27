@@ -17,10 +17,11 @@ NS_ASSUME_NONNULL_BEGIN
 
 #define BUTTON_TITLE_TRX        @"TRX" //1
 #define BUTTON_TITLE_TRC10      @"TRC10" //2
-#define BUTTON_TITLE_TRCFree    @"TRC-Free" //11
-#define BUTTON_TITLE_TRCUnfreeze @"TRC-Unfreeze" //12
+#define BUTTON_TITLE_TRCFree    @"FrozenBalance" //11
+#define BUTTON_TITLE_TRCUnfreeze @"UnfrozenBalance" //12
 #define BUTTON_TITLE_TRC20      @"TRC20" //31
 #define BUTTON_TITLE_TRC20_TRANSFER @"TRC20(transfer)"//32
+#define BUTTON_TITLE_TRC721     @"TRC721"//33
 
 
 

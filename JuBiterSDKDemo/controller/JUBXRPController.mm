@@ -25,7 +25,7 @@
     // Do any additional setup after loading the view.
     
     self.title = @"XRP options";
-    
+    self.buttonArray[3].disEnable = YES;
     self.optItem = JUB_NS_ENUM_MAIN::OPT_XRP;
 }
 
