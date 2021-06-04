@@ -105,7 +105,7 @@
         JUB_UINT16 contextID = [sharedData currContextID];
         if (0 != contextID) {
             [sharedData setCurrMainPath:nil];
-            [sharedData setCurrCoinType:-1];
+//            [sharedData setCurrCoinType:-1];
             rv = JUB_ClearContext(contextID);
             if (JUBR_OK != rv) {
                 [self addMsgData:[NSString stringWithFormat:@"[JUB_ClearContext() return %@ (0x%2lx).]", [JUBErrorCode GetErrMsg:rv], rv]];
@@ -558,6 +558,9 @@
             }
             contrTRX.triggerSmart.call_value = root["TRX"]["contracts"][sType]["call_value"].asUInt64();
             contrTRX.triggerSmart.call_token_value = root["TRX"]["contracts"][sType]["call_token_value"].asUInt64();
+            if (NSComparisonResult::NSOrderedSame != [amount compare:@""]) {
+                contrTRX.triggerSmart.call_token_value = [amount integerValue];
+            }
             contrTRX.triggerSmart.token_id = root["TRX"]["contracts"][sType]["token_id"].asUInt64();
         }
             break;

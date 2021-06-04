@@ -363,7 +363,7 @@
         });
         return;
     }
-    
+    [sharedData setCurrCoinType:optType];
     JUBInputOrderBaseController *sendApduVc = nil;
     JUBFingerManagerBaseController *fgptVc = nil;
     JUBSubPageController *vc = nil;
