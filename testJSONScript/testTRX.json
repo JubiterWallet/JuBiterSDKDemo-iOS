@@ -24,11 +24,11 @@
             "11" : {
                 "frozen_balance" : 5000,
                 "frozen_duration" : 3,
-                "resource" : 0,
+                "resource" : 1,
                 "receiver_address" : "TW6F7xUTXkv4tSqrhGBEkd5Kj6jKYmdfsz"
             },
             "12" : {
-                "resource" : 0,
+                "resource" : 1,
                 "receiver_address" : "TW6F7xUTXkv4tSqrhGBEkd5Kj6jKYmdfsz"
             },
             "31" : {
@@ -66,8 +66,8 @@
             "token_from" : "TR1D93WMkqjhFSxDsLTedzXVPHQXsGdGQi",
             "token_to" : "TV6tnwwWAbRxnYZ5TnSdLbibznWZLY4vXf",
             "token_value" : "0",
-            "tokenID" : "7600000000000000",
-            "tokenName" : "DWARFDWARFDWARF",
+            "tokenID" : "7600",
+            "tokenName" : "DWARF",
             "contract_address" : "TLwu6VYaVBc5fsaTCWRHSdk71DNrZ6Vsj6"
         }
     }

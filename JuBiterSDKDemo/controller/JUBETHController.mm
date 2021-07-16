@@ -364,8 +364,7 @@
         break;
     case JUB_NS_ENUM_ETH_COIN::BTN_ETH_ERC721:
         rv = [self transactionERC721_proc:contextID
-                                  amount:amount
-                                    root:root];
+                                     root:root];
         break;
     case JUB_NS_ENUM_ETH_COIN::BTN_ETH_UNISWAP:
         rv = [self transactionUNISWAP_proc:contextID amount:amount root:root];
@@ -448,18 +447,26 @@
     }
     
     char* abi = nullptr;
-    rv = JUB_BuildERC20AbiETH(contextID,
-                              tokenName, unitDP, contractAddress,
-                              token_to, token_value, &abi);
+    
+    rv = JUB_SetERC20TokenETH(contextID,
+                              tokenName, unitDP, contractAddress);
     if (JUBR_OK != rv) {
-        [self addMsgData:[NSString stringWithFormat:@"[JUB_BuildERC20AbiETH() return %@ (0x%2lx).]", [JUBErrorCode GetErrMsg:rv], rv]];
+        [self addMsgData:[NSString stringWithFormat:@"[JUB_SetERC20TokenETH() return %@ (0x%2lx).]", [JUBErrorCode GetErrMsg:rv], rv]];
         return rv;
     }
-    [self addMsgData:[NSString stringWithFormat:@"[JUB_BuildERC20AbiETH() OK.]"]];
+    [self addMsgData:[NSString stringWithFormat:@"[JUB_SetERC20TokenETH() OK.]"]];
+    
+    rv = JUB_BuildERC20TransferAbiETH(contextID,
+                                      token_to, token_value, &abi);
+    if (JUBR_OK != rv) {
+        [self addMsgData:[NSString stringWithFormat:@"[JUB_BuildERC20TransferAbiETH() return %@ (0x%2lx).]", [JUBErrorCode GetErrMsg:rv], rv]];
+        return rv;
+    }
+    [self addMsgData:[NSString stringWithFormat:@"[JUB_BuildERC20TransferAbiETH() OK.]"]];
     
     if (abi) {
         size_t abiLen = strlen(abi)/2;
-        [self addMsgData:[NSString stringWithFormat:@"erc20 raw[%lu]: %s.", abiLen, abi]];
+        [self addMsgData:[NSString stringWithFormat:@"ERC-20 abi[%lu]: %s.", abiLen, abi]];
     }
     
     BIP44_Path path;
@@ -475,11 +482,6 @@
                                 nonce, gasLimit, gasPriceInWei,
                                 to, valueInWei, abi,
                                 &raw);
-    if (JUBR_OK != rv) {
-        [self addMsgData:[NSString stringWithFormat:@"[JUB_FreeMemory() return %@ (0x%2lx).]", [JUBErrorCode GetErrMsg:rv], rv]];
-        return rv;
-    }
-    [self addMsgData:[NSString stringWithFormat:@"[JUB_FreeMemory() OK.]"]];
     if (JUBR_OK != rv) {
         [self addMsgData:[NSString stringWithFormat:@"[JUB_SignTransactionETH() return %@ (0x%2lx).]", [JUBErrorCode GetErrMsg:rv], rv]];
         return rv;
@@ -502,12 +504,18 @@
     return rv;
 }
 
+
 //ERC-721 Test
 - (NSUInteger) transactionERC721_proc:(NSUInteger)contextID
-                              amount:(NSString*)amount
-                                root:(Json::Value)root {
+                                 root:(Json::Value)root {
     
     JUB_RV rv = JUBR_ERROR;
+    
+//    rv = JUB_GetAddressETH(contextID, path, JUB_ENUM_BOOL::BOOL_FALSE, &token_from);
+//    cout << "[-] JUB_GetAddressETH() return " << GetErrMsg(rv) << endl;
+//    if (JUBR_OK != rv) {
+//        return rv;
+//    }
     
     JUB_CHAR_PTR tokenName = (JUB_CHAR_PTR)root["ERC721"]["tokenName"].asCString();
     JUB_CHAR_PTR contractAddress = (JUB_CHAR_PTR)root["ERC721"]["contract_address"].asCString();
@@ -515,41 +523,50 @@
     JUB_CHAR_PTR to = (JUB_CHAR_PTR)root["ERC721"]["contract_address"].asCString();
     JUB_CHAR_PTR token_to = (JUB_CHAR_PTR)root["ERC721"]["token_to"].asCString();
     JUB_CHAR_PTR tokenID = (JUB_CHAR_PTR)root["ERC721"]["tokenID"].asCString();
-
+    
     JUB_CHAR_PTR abi = nullptr;
-    rv = JUB_BuildERC721AbiETH(contextID,
-                               tokenName, contractAddress,
-                               token_from, token_to, tokenID,
-                               &abi);
+    
+    rv = JUB_SetERC721TokenETH(contextID,
+                               tokenName, contractAddress);
     if (JUBR_OK != rv) {
-        [self addMsgData:[NSString stringWithFormat:@"[JUB_BuildERC721AbiETH() return %@ (0x%2lx).]", [JUBErrorCode GetErrMsg:rv], rv]];
+        [self addMsgData:[NSString stringWithFormat:@"[JUB_SetERC721TokenETH() return %@ (0x%2lx).]", [JUBErrorCode GetErrMsg:rv], rv]];
         return rv;
     }
-    [self addMsgData:[NSString stringWithFormat:@"[JUB_BuildERC721AbiETH() OK.]"]];
+    [self addMsgData:[NSString stringWithFormat:@"[JUB_SetERC721TokenETH() OK.]"]];
+
+
+    rv = JUB_BuildERC721TransferAbiETH(contextID,
+                                       token_from, token_to, tokenID,
+                                       &abi);
+    
+    if (JUBR_OK != rv) {
+        [self addMsgData:[NSString stringWithFormat:@"[JUB_BuildERC721TransferAbiETH() return %@ (0x%2lx).]", [JUBErrorCode GetErrMsg:rv], rv]];
+        return rv;
+    }
+    [self addMsgData:[NSString stringWithFormat:@"[JUB_BuildERC721TransferAbiETH() OK.]"]];
     
     if (abi) {
         size_t abiLen = strlen(abi)/2;
-        [self addMsgData:[NSString stringWithFormat:@"erc721 raw[%lu]: %s.", abiLen, abi]];
+        [self addMsgData:[NSString stringWithFormat:@"ERC-721 abi[%lu]: %s.", abiLen, abi]];
     }
     
     BIP44_Path path;
     path.change = (JUB_ENUM_BOOL)root["ERC721"]["bip32_path"]["change"].asBool();
     path.addressIndex = root["ERC721"]["bip32_path"]["addressIndex"].asUInt();
-
+    
     uint32_t nonce = root["ERC721"]["nonce"].asUInt();//.asDouble();
     uint32_t gasLimit = root["ERC721"]["gasLimit"].asUInt();//.asDouble();
     JUB_CHAR_PTR gasPriceInWei = (JUB_CHAR_PTR)root["ERC721"]["gasPriceInWei"].asCString();
     JUB_CHAR_PTR valueInWei = nullptr; //"" and "0" ara also OK
     JUB_CHAR_PTR raw = nullptr;
     rv = JUB_SignTransactionETH(contextID, path, nonce, gasLimit, gasPriceInWei, to, valueInWei, abi, &raw);
-    
     if (JUBR_OK != rv) {
         [self addMsgData:[NSString stringWithFormat:@"[JUB_SignTransactionETH() return %@ (0x%2lx).]", [JUBErrorCode GetErrMsg:rv], rv]];
         return rv;
     }
     [self addMsgData:[NSString stringWithFormat:@"[JUB_SignTransactionETH() OK.]"]];
+    JUB_FreeMemory(abi);
     
-    rv = JUB_FreeMemory(abi);
     if (raw) {
         size_t txLen = strlen(raw)/2;
         [self addMsgData:[NSString stringWithFormat:@"tx raw[%lu]: %s.", txLen, raw]];
